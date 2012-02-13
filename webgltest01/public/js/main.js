@@ -3,6 +3,9 @@ function Vector3(x, y, z){
     this.y = y || 0;
     this.z = z || 0;
 }
+Vector3.X = new Vector3(1,0,0);
+Vector3.Y = new Vector3(0,1,0);
+Vector3.Z = new Vector3(0,0,1);
 
 function Quaternion(x, y, z, w){
     this.x = x || 0;
@@ -10,6 +13,26 @@ function Quaternion(x, y, z, w){
     this.z = z || 0;
     this.w = w || 0;
 }
+Quaternion.prototype.fromAxisAngle = function(axis, angle) {
+    var halfAngle = angle*0.5;
+    var s =  Math.sin(halfAngle);
+    this.x = axis.x * s;
+    this.y = axis.y * s;
+    this.z = axis.z * s;
+    this.w = Math.cos(halfAngle);
+};
+
+function Transform() {
+    this.position = position || new Vector3();
+    this.position = rotation || new Quaternion();
+}
+/*
+Quaternion.prototype.mul = function(q) {
+
+}
+
+Quaternion.prototype.toMatrix = function(m) {
+}*/
 
 function Transform(){
     this.position = new Vector3();
@@ -329,15 +352,26 @@ function initBuffers() {
 var xRot = 0;
 var yRot = 0;
 var zRot = 0;
-
+var camyrot=0;
+var camxrot=0;
 function drawScene() {
     gl.viewport(0,0,canvas.width, canvas.height);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     
     mat4.perspective(45, canvas.width / canvas.height, 0.1, 100.0, pMatrix);
     
+    camera.transform.rotation.fromAxisAngle(Vector3.Y, camyrot);
     mat4.identity(mvMatrix);
-    
+    var rotation = quat4.create([
+        camera.transform.rotation.x,
+        camera.transform.rotation.y,
+        camera.transform.rotation.z,
+        camera.transform.rotation.w
+        ]);
+    //quat4.toMat4(rotation, mvMatrix);
+    mat4.rotate(mvMatrix, degToRad(camyrot), [0, 1, 0]);
+    mat4.rotate(mvMatrix, degToRad(camxrot), [1, 0, 0]);
+
     mat4.translate(mvMatrix, [0.0, 0.0, camera.transform.position.z]);
     
     mat4.rotate(mvMatrix, degToRad(xRot), [1, 0, 0]);
@@ -411,20 +445,48 @@ function keyUp(){
 var Input = {};
 Input.Keys = {};
 
-Input.Keys.A = 65;
-Input.Keys.W = 87;
-Input.Keys.S = 83;
-Input.Keys.D = 68;
+Input.Keys.A    = 65;
+Input.Keys.W    = 87;
+Input.Keys.S    = 83;
+Input.Keys.D    = 68;
+Input.Keys.UP   = 38;
+Input.Keys.DOWN = 40;
+Input.Keys.LEFT = 37;
+Input.Keys.RIGHT = 39;
 
 function handleInput() {
     if(keys[Input.Keys.W] === true) {
-        camera.transform.z += 1.0;
+        camera.transform.position.z += 1.0;
     }
     if(keys[Input.Keys.S] === true) {
-        camera.transform.z -= 1.0;
+        camera.transform.position.z -= 1.0;
+    }
+    if(keys[Input.Keys.LEFT] === true) {
+        camyrot += 0.50;
+    }
+    if(keys[Input.Keys.RIGHT] === true) {
+        camyrot -= 0.50;
+    }
+
+    if(keys[Input.Keys.UP] === true) {
+        camxrot += 0.50;
+    }
+    if(keys[Input.Keys.DOWN] === true) {
+        camxrot -= 0.50;
     }
 }
-
+var lastMouseX, lastMouseY;
+var deltaMouseX, deltaMouseY;
+function onMouseMove(){
+    deltaMouseX = event.clientX - lastMouseX;
+    deltaMouseY = event.clientY - lastMouseY;
+}
+function onMouseDown(){
+    lastMouseX = event.clientX;
+    lastMouseY = event.clientY;
+}
+function onMouseUp(){
+}
 window.addEventListener('resize', resizeCanvas, false);
 window.addEventListener('keydown', keyDown, false);
 window.addEventListener('keyup', keyUp, false);
