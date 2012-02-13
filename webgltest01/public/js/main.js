@@ -93,19 +93,6 @@ function loadShaders() {
     vertexPositionAttribute = gl.getAttributeLocation(program, "aVertexPosition");
     gl.enableVertexAttribArray(vertexPositionAttribute);
 }
-var squareVertexBuffer;
-
-function createBuffers() {
-    squareVertexBuffer = gl.createBuffer(); 
-    gl.bindBuffer(gl.ARRAY_BUFFER,squareVertexBuffer);
-    var vertices = [
-        1.0,1.0,0.0,
-        -1.0,1.0,0.0,
-        1.0,-1.0,0.0
-        -1.0,-1.0,0.0,
-    ];
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
-}
 var perspectiveMatrix;
 var gl;
 function render() {
@@ -247,7 +234,60 @@ var cubeVertexPositionBuffer;
 var cubeVertexTextureCoordBuffer;
 var cubeVertexIndexBuffer;
 
+var mapVertexPositionBuffer;
+var mapVertexTexCoordBuffer;
+var mapVertexIndexBuffer;
+
 function initBuffers() {
+    var x, y;
+    var vertices = [];
+    var texCoords = [];
+    var indexes = [];
+    for(y=0; y<map.height; y++) {
+        for(x=0; x<map.width; x++) {
+                if(map.data[y+map.width+x] === 0) {
+                    vertices.push(x).push(0).push(y);
+                    vertices.push(x+1).push(0).push(y);
+                    vertices.push(x).push(0).push(y+1);
+                    vertices.push(x+1).push(0).push(y+1);
+                    texCoords.push(0.0).push(0);
+                    texCoords.push(1.0).push(0);
+                    texCoords.push(0.0).push(1.0);
+                    texCoords.push(1.0).push(1.0);
+                    indexes.push(0).push(1).push(2);
+                    indexes.push(2).push(1).push(3);
+                }
+        }
+    }
+    mapVertexPositionBuffer = gl.createBuffer();
+    mapVertexPositionBuffer.itemSize = 3;
+    mapVertexPositionBuffer.numItems = vertices.length / 3;
+    gl.bindBuffer(gl.ARRAY_BUFFER,mapVertexPositionBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+    
+    mapVertexTexCoordBuffer = gl.createBuffer();
+    mapVertexTexCoordBuffer.itemSize = 2;
+    mapVertexTexCoordBuffer.numItems = texCoords.length / 2;
+    gl.bindBuffer(gl.ARRAY_BUFFER,mapVertexTexCoordBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(texCoords), gl.STATIC_DRAW);
+
+    mapVertexIndexBuffer = gl.createBuffer();
+    mapVertexIndexBuffer.itemSize = 1;
+    mapVertexIndexBuffer.numItems = texCoords.length;
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, mapVertexIndexBuffer);
+    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indexes), gl.STATIC_DRAW);
+    /*
+    var cubeVertexIndices = [
+        0, 1, 2,      0, 2, 3,    // Front face
+        4, 5, 6,      4, 6, 7,    // Back face
+        8, 9, 10,     8, 10, 11,  // Top face
+        12, 13, 14,   12, 14, 15, // Bottom face
+        16, 17, 18,   16, 18, 19, // Right face
+        20, 21, 22,   20, 22, 23  // Left face
+    ];
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, mapVertexIndexBuffer);
+    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(mapVertexIndices), gl.STATIC_DRAW);
+    
     cubeVertexPositionBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, cubeVertexPositionBuffer);
     var vertices = [
@@ -347,6 +387,7 @@ function initBuffers() {
     gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(cubeVertexIndices), gl.STATIC_DRAW);
     cubeVertexIndexBuffer.itemSize = 1;
     cubeVertexIndexBuffer.numItems = 36;
+    */
 }
 
 var xRot = 0;
