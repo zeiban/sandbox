@@ -1,3 +1,12 @@
+function Matrix4(){
+    this.m11 = this.m22 = this.m33 = this.m44 = 1.0;
+
+this.m12 = this.m13 = this.m14 = 
+    this.m21 = this.m23 = this.m24 = 
+    this.m31 = this.m32 = this.m34 =
+    this.m41 = this.m42 = this.m43 = 0.0;
+}
+
 function Vector3(x, y, z){
     this.x = x || 0;
     this.y = y || 0;
@@ -22,7 +31,7 @@ Quaternion.prototype.fromAxisAngle = function(axis, angle) {
     this.w = Math.cos(halfAngle);
 };
 
-function Transform() {
+function Transform(position, rotation) {
     this.position = position || new Vector3();
     this.position = rotation || new Quaternion();
 }
@@ -37,14 +46,20 @@ Quaternion.prototype.toMatrix = function(m) {
 function Transform(){
     this.position = new Vector3();
     this.rotation = new Quaternion();
+    this.localMatrix = new Matrix4();
+    this.worldMatrix = new Matrix4();
+}
+function Camera() {
+    this.transform = new Transform();
 }
 var camera = {
     transform:{
-        position: new Vector3(0.0,0.0,-5.0),
+        position: new Vector3(0.0,1.0,-5.0),
         rotation: new Quaternion()
     }
 };
 console.log(camera.transform.position[2]);
+
 
 var map = {
     width:8,
@@ -52,9 +67,9 @@ var map = {
     data:
     [
         1,1,1,1,1,1,1,1,
-        1,0,0,0,0,0,0,1,
-        1,0,0,0,0,0,0,1,
-        1,0,0,0,0,0,0,1,
+        1,0,0,0,1,0,0,1,
+        1,0,0,0,1,0,0,1,
+        1,1,0,1,1,0,0,1,
         1,0,0,0,0,0,0,1,
         1,0,0,0,0,0,0,1,
         1,0,0,0,0,0,0,1,
@@ -230,12 +245,8 @@ function degToRad(degrees) {
     return degrees * Math.PI / 180;
 }
 
-var cubeVertexPositionBuffer;
-var cubeVertexTextureCoordBuffer;
-var cubeVertexIndexBuffer;
-
 var mapVertexPositionBuffer;
-var mapVertexTexCoordBuffer;
+var mapVertexTextureCoordBuffer;
 var mapVertexIndexBuffer;
 
 function initBuffers() {
@@ -243,20 +254,48 @@ function initBuffers() {
     var vertices = [];
     var texCoords = [];
     var indexes = [];
+    var indexOffset=0;
+
+    var xOffset = map.width * -0.5;
+    var yOffset = map.height * 0.5;
+    
     for(y=0; y<map.height; y++) {
         for(x=0; x<map.width; x++) {
-                if(map.data[y+map.width+x] === 0) {
-                    vertices.push(x).push(0).push(y);
-                    vertices.push(x+1).push(0).push(y);
-                    vertices.push(x).push(0).push(y+1);
-                    vertices.push(x+1).push(0).push(y+1);
-                    texCoords.push(0.0).push(0);
-                    texCoords.push(1.0).push(0);
-                    texCoords.push(0.0).push(1.0);
-                    texCoords.push(1.0).push(1.0);
-                    indexes.push(0).push(1).push(2);
-                    indexes.push(2).push(1).push(3);
-                }
+            if(map.data[y*map.width+x] === 0) {
+                /*
+                vertices.push(x,0,y);
+                vertices.push(x+1,0,y);
+                vertices.push(x,0,y+1);
+                vertices.push(x+1,0,y+1);
+                */
+                vertices.push(xOffset+x,-0.5,yOffset-y);
+                vertices.push(xOffset+x+1,-0.5,yOffset-y);
+                vertices.push(xOffset+x,-0.5,yOffset-y-1);
+                vertices.push(xOffset+x+1,-0.5,yOffset-y-1);
+
+                vertices.push(xOffset+x,0.5,yOffset-y);
+                vertices.push(xOffset+x+1,0.5,yOffset-y);
+                vertices.push(xOffset+x,0.5,yOffset-y-1);
+                vertices.push(xOffset+x+1,0.5,yOffset-y-1);
+                
+                texCoords.push(0.0,0.0);
+                texCoords.push(1.0,0.0);
+                texCoords.push(0.0,1.0);
+                texCoords.push(1.0,1.0);
+
+                texCoords.push(0.0,0.0);
+                texCoords.push(1.0,0.0);
+                texCoords.push(0.0,1.0);
+                texCoords.push(1.0,1.0);
+
+                indexes.push(indexOffset,indexOffset+1,indexOffset+2);
+                indexes.push(indexOffset+2,indexOffset+1,indexOffset+3);
+                indexOffset+=4;
+
+                indexes.push(indexOffset,indexOffset+1,indexOffset+2);
+                indexes.push(indexOffset+2,indexOffset+1,indexOffset+3);
+                indexOffset+=4;
+            }
         }
     }
     mapVertexPositionBuffer = gl.createBuffer();
@@ -265,15 +304,15 @@ function initBuffers() {
     gl.bindBuffer(gl.ARRAY_BUFFER,mapVertexPositionBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
     
-    mapVertexTexCoordBuffer = gl.createBuffer();
-    mapVertexTexCoordBuffer.itemSize = 2;
-    mapVertexTexCoordBuffer.numItems = texCoords.length / 2;
-    gl.bindBuffer(gl.ARRAY_BUFFER,mapVertexTexCoordBuffer);
+    mapVertexTextureCoordBuffer = gl.createBuffer();
+    mapVertexTextureCoordBuffer.itemSize = 2;
+    mapVertexTextureCoordBuffer.numItems = texCoords.length / 2;
+    gl.bindBuffer(gl.ARRAY_BUFFER,mapVertexTextureCoordBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(texCoords), gl.STATIC_DRAW);
 
     mapVertexIndexBuffer = gl.createBuffer();
     mapVertexIndexBuffer.itemSize = 1;
-    mapVertexIndexBuffer.numItems = texCoords.length;
+    mapVertexIndexBuffer.numItems = indexes.length;
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, mapVertexIndexBuffer);
     gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indexes), gl.STATIC_DRAW);
     /*
@@ -415,23 +454,23 @@ function drawScene() {
 
     mat4.translate(mvMatrix, [0.0, 0.0, camera.transform.position.z]);
     
-    mat4.rotate(mvMatrix, degToRad(xRot), [1, 0, 0]);
-    mat4.rotate(mvMatrix, degToRad(yRot), [0, 1, 0]);
-    mat4.rotate(mvMatrix, degToRad(zRot), [0, 0, 1]);
+//    mat4.rotate(mvMatrix, degToRad(xRot), [1, 0, 0]);
+//    mat4.rotate(mvMatrix, degToRad(yRot), [0, 1, 0]);
+//    mat4.rotate(mvMatrix, degToRad(zRot), [0, 0, 1]);
     
-    gl.bindBuffer(gl.ARRAY_BUFFER, cubeVertexPositionBuffer);
-    gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, cubeVertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
+    gl.bindBuffer(gl.ARRAY_BUFFER, mapVertexPositionBuffer);
+    gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, mapVertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
     
-    gl.bindBuffer(gl.ARRAY_BUFFER, cubeVertexTextureCoordBuffer);
-    gl.vertexAttribPointer(shaderProgram.textureCoordAttribute, cubeVertexTextureCoordBuffer.itemSize, gl.FLOAT, false, 0, 0);
+    gl.bindBuffer(gl.ARRAY_BUFFER, mapVertexTextureCoordBuffer);
+    gl.vertexAttribPointer(shaderProgram.textureCoordAttribute, mapVertexTextureCoordBuffer.itemSize, gl.FLOAT, false, 0, 0);
     
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, wallTexture);
     gl.uniform1i(shaderProgram.samplerUniform, 0);
     
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, cubeVertexIndexBuffer);
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, mapVertexIndexBuffer);
     setMatrixUniforms();
-    gl.drawElements(gl.TRIANGLES, cubeVertexIndexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
+    gl.drawElements(gl.TRIANGLES, mapVertexIndexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
 }
 
 var lastTime = 0;
@@ -497,16 +536,16 @@ Input.Keys.RIGHT = 39;
 
 function handleInput() {
     if(keys[Input.Keys.W] === true) {
-        camera.transform.position.z += 1.0;
+        camera.transform.position.z += 0.5;
     }
     if(keys[Input.Keys.S] === true) {
-        camera.transform.position.z -= 1.0;
+        camera.transform.position.z -= 0.5;
     }
     if(keys[Input.Keys.LEFT] === true) {
-        camyrot += 0.50;
+        camyrot -= 0.50;
     }
     if(keys[Input.Keys.RIGHT] === true) {
-        camyrot -= 0.50;
+        camyrot += 0.50;
     }
 
     if(keys[Input.Keys.UP] === true) {
