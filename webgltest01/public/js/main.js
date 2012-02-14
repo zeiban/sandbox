@@ -1,12 +1,79 @@
 function Matrix4(){
     this.m11 = this.m22 = this.m33 = this.m44 = 1.0;
 
-this.m12 = this.m13 = this.m14 = 
+    this.m12 = this.m13 = this.m14 = 
     this.m21 = this.m23 = this.m24 = 
     this.m31 = this.m32 = this.m34 =
     this.m41 = this.m42 = this.m43 = 0.0;
 }
 
+Matrix4.prototype.multiply = function(a,b) {
+    var 
+    a11 = a.m11, a12 = a.m12, a13 = a.m13, a14 = a.m14,
+	a21 = a.m21, a22 = a.m22, a23 = a.m23, a24 = a.m24,
+	a31 = a.m31, a32 = a.m32, a33 = a.m33, a34 = a.m34,
+	a41 = a.m41, a42 = a.m42, a43 = a.m43, a44 = a.m44,
+
+	b11 = b.m11, b12 = b.m12, b13 = b.m13, b14 = b.n14,
+	b21 = b.m21, b22 = b.m22, b23 = b.m23, b24 = b.m24,
+	b31 = b.m31, b32 = b.m32, b33 = b.m33, b34 = b.m34,
+	b41 = b.m41, b42 = b.m42, b43 = b.m43, b44 = b.m44;    
+
+    this.m11 = a11 * b11 + a12 * b21 + a13 * b31 + a14 * b41;
+	this.m12 = a11 * b12 + a12 * b22 + a13 * b32 + a14 * b42;
+	this.m13 = a11 * b13 + a12 * b23 + a13 * b33 + a14 * b43;
+	this.m14 = a11 * b14 + a12 * b24 + a13 * b34 + a14 * b44;
+
+	this.m21 = a21 * b11 + a22 * b21 + a23 * b31 + a24 * b41;
+	this.m22 = a21 * b12 + a22 * b22 + a23 * b32 + a24 * b42;
+	this.m23 = a21 * b13 + a22 * b23 + a23 * b33 + a24 * b43;
+	this.m24 = a21 * b14 + a22 * b24 + a23 * b34 + a24 * b44;
+
+	this.m31 = a31 * b11 + a32 * b21 + a33 * b31 + a34 * b41;
+	this.m32 = a31 * b12 + a32 * b22 + a33 * b32 + a34 * b42;
+	this.m33 = a31 * b13 + a32 * b23 + a33 * b33 + a34 * b43;
+	this.m34 = a31 * b14 + a32 * b24 + a33 * b34 + a34 * b44;
+
+	this.m41 = a41 * b11 + a42 * b21 + a43 * b31 + a44 * b41;
+	this.m42 = a41 * b12 + a42 * b22 + a43 * b32 + a44 * b42;
+	this.m43 = a41 * b13 + a42 * b23 + a43 * b33 + a44 * b43;
+	this.m44 = a41 * b14 + a42 * b24 + a43 * b34 + a44 * b44;
+
+    return this;
+}
+Matrix4.prototype.fromTranslation = function(translation) {
+    this.m14 = translation.x;
+    this.m24 = translation.y;
+    this.m34 = translation.z;
+}
+Matrix4.prototype.fromQuaternion = function(q) {
+    var xx      = q.x * q.x;
+    var xy      = q.x * q.y;
+    var xz      = q.x * q.z;
+    var xw      = q.x * q.w;
+    
+    var yy      = q.y * q.y;
+    var yz      = q.y * q.z;
+    var yw      = q.y * q.w;
+    
+    var zz      = q.z * q.z;
+    var zw      = q.z * q.w;    
+
+    this.m00  = 1 - 2 * ( yy + zz );
+    this.m01  =     2 * ( xy - zw );
+    this.m02 =     2 * ( xz + yw );
+    
+    this.m10  =     2 * ( xy + zw );
+    this.m11  = 1 - 2 * ( xx + zz );
+    this.m12  =     2 * ( yz - xw );
+    
+    this.m20  =     2 * ( xz - yw );
+    this.m21  =     2 * ( yz + xw );
+    this.m22  = 1 - 2 * ( xx + yy );
+    
+    this.m03  = this.m13 = this.m23 = this.m30 = this.m31 = this.m32 = 0;
+    this.m33 = 1;
+}
 function Vector3(x, y, z){
     this.x = x || 0;
     this.y = y || 0;
@@ -67,9 +134,9 @@ var map = {
     data:
     [
         1,1,1,1,1,1,1,1,
-        1,0,0,0,1,0,0,1,
-        1,0,0,0,1,0,0,1,
-        1,1,0,1,1,0,0,1,
+        1,0,0,0,0,0,0,1,
+        1,0,0,0,0,0,0,1,
+        1,0,0,0,0,0,0,1,
         1,0,0,0,0,0,0,1,
         1,0,0,0,0,0,0,1,
         1,0,0,0,0,0,0,1,
@@ -192,7 +259,7 @@ function initShaders(){
 
 function handleLoadedTexture(texture) {
     gl.bindTexture(gl.TEXTURE_2D, texture);
-    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, texture.image);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
@@ -268,20 +335,28 @@ function initBuffers() {
                 vertices.push(x,0,y+1);
                 vertices.push(x+1,0,y+1);
                 */
-                vertices.push(xOffset+x,-0.5,yOffset-y);
-                vertices.push(xOffset+x+1,-0.5,yOffset-y);
-                vertices.push(xOffset+x,-0.5,yOffset-y-1);
-                vertices.push(xOffset+x+1,-0.5,yOffset-y-1);
 
+                // floor
+                vertices.push(xOffset+x+1,-0.5,yOffset-y);
+                vertices.push(xOffset+x,-0.5,yOffset-y);
+                vertices.push(xOffset+x+1,-0.5,yOffset-y-1);
+                vertices.push(xOffset+x,-0.5,yOffset-y-1);
+
+                texCoords.push(0.0,0.0);
+                texCoords.push(1.0,0.0);
+                texCoords.push(0.0,1.0);
+                texCoords.push(1.0,1.0);
+
+                indexes.push(indexOffset,indexOffset+1,indexOffset+2);
+                indexes.push(indexOffset+2,indexOffset+1,indexOffset+3);
+                indexOffset+=4;
+
+                //Celing
                 vertices.push(xOffset+x,0.5,yOffset-y);
                 vertices.push(xOffset+x+1,0.5,yOffset-y);
                 vertices.push(xOffset+x,0.5,yOffset-y-1);
                 vertices.push(xOffset+x+1,0.5,yOffset-y-1);
                 
-                texCoords.push(0.0,0.0);
-                texCoords.push(1.0,0.0);
-                texCoords.push(0.0,1.0);
-                texCoords.push(1.0,1.0);
 
                 texCoords.push(0.0,0.0);
                 texCoords.push(1.0,0.0);
@@ -291,10 +366,71 @@ function initBuffers() {
                 indexes.push(indexOffset,indexOffset+1,indexOffset+2);
                 indexes.push(indexOffset+2,indexOffset+1,indexOffset+3);
                 indexOffset+=4;
+                
+                //West Wall
+                if(x == 0 || map.data[y*map.width+(x-1)] == 1) {
+                    vertices.push(xOffset+x,0.5,yOffset-y);
+                    vertices.push(xOffset+x,0.5,yOffset-y-1);
+                    vertices.push(xOffset+x,-0.5,yOffset-y);
+                    vertices.push(xOffset+x,-0.5,yOffset-y-1);
 
-                indexes.push(indexOffset,indexOffset+1,indexOffset+2);
-                indexes.push(indexOffset+2,indexOffset+1,indexOffset+3);
-                indexOffset+=4;
+                    texCoords.push(0.0,0.0);
+                    texCoords.push(1.0,0.0);
+                    texCoords.push(0.0,1.0);
+                    texCoords.push(1.0,1.0);
+
+                    indexes.push(indexOffset,indexOffset+1,indexOffset+2);
+                    indexes.push(indexOffset+2,indexOffset+1,indexOffset+3);
+                    indexOffset+=4;
+                }
+                //East Wall
+                if(x == map.width-1 || map.data[y*map.width+(x+1)] == 1) {
+                    vertices.push(xOffset+x+1,0.5,yOffset-y-1);
+                    vertices.push(xOffset+x+1,0.5,yOffset-y);
+                    vertices.push(xOffset+x+1,-0.5,yOffset-y-1);
+                    vertices.push(xOffset+x+1,-0.5,yOffset-y);
+
+                    texCoords.push(0.0,0.0);
+                    texCoords.push(1.0,0.0);
+                    texCoords.push(0.0,1.0);
+                    texCoords.push(1.0,1.0);
+
+                    indexes.push(indexOffset,indexOffset+1,indexOffset+2);
+                    indexes.push(indexOffset+2,indexOffset+1,indexOffset+3);
+                    indexOffset+=4;
+                }
+                //South Wall
+                if(y == 0 || map.data[(y-1)*map.width+x] == 1) {
+                    vertices.push(xOffset+x+1,0.5,yOffset-y);
+                    vertices.push(xOffset+x,0.5,yOffset-y);
+                    vertices.push(xOffset+x+1,-0.5,yOffset-y);
+                    vertices.push(xOffset+x,-0.5,yOffset-y);
+
+                    texCoords.push(0.0,0.0);
+                    texCoords.push(1.0,0.0);
+                    texCoords.push(0.0,1.0);
+                    texCoords.push(1.0,1.0);
+
+                    indexes.push(indexOffset,indexOffset+1,indexOffset+2);
+                    indexes.push(indexOffset+2,indexOffset+1,indexOffset+3);
+                    indexOffset+=4;
+                }
+                //North Wall
+                if(y == map.height-1 || map.data[(y+1)*map.width+x] == 1) {
+                    vertices.push(xOffset+x,0.5,yOffset-y-1);
+                    vertices.push(xOffset+x+1,0.5,yOffset-y-1);
+                    vertices.push(xOffset+x,-0.5,yOffset-y-1);
+                    vertices.push(xOffset+x+1,-0.5,yOffset-y-1);
+
+                    texCoords.push(0.0,0.0);
+                    texCoords.push(1.0,0.0);
+                    texCoords.push(0.0,1.0);
+                    texCoords.push(1.0,1.0);
+
+                    indexes.push(indexOffset,indexOffset+1,indexOffset+2);
+                    indexes.push(indexOffset+2,indexOffset+1,indexOffset+3);
+                    indexOffset+=4;
+                }
             }
         }
     }
@@ -580,6 +716,9 @@ initBuffers();
 initTextures();
 gl.clearColor(1.0,0.0,0.0,1.0);
 gl.enable(gl.DEPTH_TEST);
+gl.enable(gl.CULL_FACE);
+gl.cullFace(gl.BACK);
+gl.frontFace(gl.CW);
 tick();
 //canvas.webkitRequestFullScreen(); 
 
