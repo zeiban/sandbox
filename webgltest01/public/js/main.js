@@ -6,7 +6,32 @@ function Matrix4(){
     this.m31 = this.m32 = this.m34 =
     this.m41 = this.m42 = this.m43 = 0.0;
 }
-
+Matrix4.prototype.setTranslation = function(v){
+    this.m12 = v.x;
+    this.m24 = v.y;
+    this.m34 = v.z;
+};
+Matrix4.prototype.right = function(a) {
+    var r = a || new Vector3();
+    r.x = this.m11;
+    r.y = this.m21;
+    r.z = this.m31;
+    return r;
+};
+Matrix4.prototype.up = function(a) {
+    var r = a || new Vector3();
+    r.x = this.m12;
+    r.y = this.m22;
+    r.z = this.m32;
+    return r;
+};
+Matrix4.prototype.forward = function(a) {
+    var r = a || new Vector3();
+    r.x = this.m13;
+    r.y = this.m23;
+    r.z = this.m33;
+    return r;
+};
 Matrix4.prototype.multiply = function(a,b) {
     var 
     a11 = a.m11, a12 = a.m12, a13 = a.m13, a14 = a.m14,
@@ -40,12 +65,22 @@ Matrix4.prototype.multiply = function(a,b) {
 	this.m44 = a41 * b14 + a42 * b24 + a43 * b34 + a44 * b44;
 
     return this;
-}
+};
 Matrix4.prototype.fromTranslation = function(translation) {
     this.m14 = translation.x;
     this.m24 = translation.y;
     this.m34 = translation.z;
-}
+};
+
+Matrix4.prototype.toArray = function(a) {
+	a[0] = this.m11; a[1] = this.m21; a[2] = this.m31; a[3] = this.m41;
+	a[4] = this.m12; a[5] = this.m22; a[6] = this.m32; a[7] = this.m42;
+	a[8]  = this.m13; a[9]  = this.m23; a[10] = this.m33; a[11] = this.m43;
+	a[12] = this.m14; a[13] = this.m24; a[14] = this.m34; a[15] = this.m44;
+
+	return a;
+};
+
 Matrix4.prototype.fromQuaternion = function(q) {
     var xx      = q.x * q.x;
     var xy      = q.x * q.y;
@@ -73,12 +108,46 @@ Matrix4.prototype.fromQuaternion = function(q) {
     
     this.m03  = this.m13 = this.m23 = this.m30 = this.m31 = this.m32 = 0;
     this.m33 = 1;
-}
+};
+
 function Vector3(x, y, z){
     this.x = x || 0;
     this.y = y || 0;
     this.z = z || 0;
 }
+Vector3.prototype.add = function(v,r) {
+    r = r || new Vector3();
+    r = this.x + v.x;
+    r = this.y + v.y;
+    r = this.z + v.z;
+    return r;
+};
+Vector3.prototype.addSelf = function(v) {
+    this.add(v, this);
+    return this;
+};
+Vector3.prototype.adsubtract = function(v,r) {
+    r = r || new Vector3();
+    r = this.x - v.x;
+    r = this.y - v.y;
+    r = this.z - v.z;
+    return r;
+};
+Vector3.prototype.subtractSelf = function(v) {
+    this.subtract(v, this);
+    return this;
+};
+Vector3.prototype.multiplyScalar = function(s, r) {
+    r = r || new Vector3();
+    r = this.x * s;
+    r = this.y * s;
+    r = this.z * s;
+    return this;
+};
+Vector3.prototype.multiplyScalarSelf = function(s) {
+    this.multiplyScalar(s, this);
+    return this;
+};
 Vector3.X = new Vector3(1,0,0);
 Vector3.Y = new Vector3(0,1,0);
 Vector3.Z = new Vector3(0,0,1);
@@ -98,10 +167,22 @@ Quaternion.prototype.fromAxisAngle = function(axis, angle) {
     this.w = Math.cos(halfAngle);
 };
 
+Quaternion.prototype.multiply = function(q1,q2){
+    this.x =  q1.x * q2.w + q1.y * q2.z - q1.z * q2.y + q1.w * q2.x;
+    this.y = -q1.x * q2.z + q1.y * q2.w + q1.z * q2.x + q1.w * q2.y;
+    this.z =  q1.x * q2.y - q1.y * q2.x + q1.z * q2.w + q1.w * q2.z;
+    this.w = -q1.x * q2.x - q1.y * q2.y - q1.z * q2.z + q1.w * q2.w;
+}    
 function Transform(position, rotation) {
     this.position = position || new Vector3();
     this.position = rotation || new Quaternion();
+    this.localMatrix = new Matrix4();
+    this.worldMatrix = new Matrix4();
 }
+
+Transform.prototype.right = function(){
+    return this.localMatix.right();
+};
 /*
 Quaternion.prototype.mul = function(q) {
 
@@ -585,10 +666,18 @@ function drawScene() {
         camera.transform.rotation.w
         ]);
     //quat4.toMat4(rotation, mvMatrix);
-    mat4.rotate(mvMatrix, degToRad(camyrot), [0, 1, 0]);
-    mat4.rotate(mvMatrix, degToRad(camxrot), [1, 0, 0]);
-
-    mat4.translate(mvMatrix, [0.0, 0.0, camera.transform.position.z]);
+//    mat4.rotate(mvMatrix, degToRad(camyrot), [0, 1, 0]);
+//    mat4.rotate(mvMatrix, degToRad(camxrot), [1, 0, 0]);
+    var mymat = new Matrix4();
+    var f32array = new Float32Array(16); 
+    
+    var forward = mymat.right();
+//    position.add(forward.scale(2));
+//    camera.transform.position.add(new Vector3(0,0,1));
+    mymat.setTranslation(camera.transform.position);
+    mymat.toArray(f32array);
+    mvMatrix = f32array;   
+//    mat4.translate(mvMatrix, [0.0, 0.0, camera.transform.position.z]);
     
 //    mat4.rotate(mvMatrix, degToRad(xRot), [1, 0, 0]);
 //    mat4.rotate(mvMatrix, degToRad(yRot), [0, 1, 0]);
@@ -676,6 +765,13 @@ function handleInput() {
     }
     if(keys[Input.Keys.S] === true) {
         camera.transform.position.z -= 0.5;
+    }
+    if(keys[Input.Keys.A] === true) {
+        camera.transform.position.add(camera.transform.right().multiplyScalar(2));
+    }
+    if(keys[Input.Keys.A] === true) {
+        //position += right * scale
+        camera.transform.position.subtract(camera.transform.right().multiplyScalar(2));
     }
     if(keys[Input.Keys.LEFT] === true) {
         camyrot -= 0.50;
