@@ -11,7 +11,28 @@
         		font-weight: bold;
         		overflow:hidden;
         	}
+            #debug-info {
+                position: absolute;
+            	top: 5px;
+            	left: 5px;
+            	z-index: 2;
+            	color: white;
+            	border: 1px solid #6699FF;
+            	background-color: #3355FF;
+            	opacity: 0.5;
+            	-moz-border-radius: 5px;
+            	-webkit-border-radius: 5px;
+            	padding: 5px;
+            	min-width: 75px;
+            	text-align: center;
+            	pointer-events: none;
+            }
         </style>	
+        <script type="text/javascript" src="js/Quaternion.js"></script>
+        <script type="text/javascript" src="js/Vector3.js"></script>
+        <script type="text/javascript" src="js/Matrix4.js"></script>
+        <script type="text/javascript" src="js/Transform.js"></script>
+        <script type="text/javascript" src="js/Camera.js"></script>
         <script type="text/javascript" src="js/glMatrix.js"></script>
         <script id="shader-fs" type="x-shader/x-fragment">  
             precision mediump float;
@@ -39,8 +60,40 @@
                 vTextureCoord = aTextureCoord;
             }
         </script>
+        <script id="color-shader-fs" type="x-shader/x-fragment">  
+            precision mediump float;
+        
+            varying vec3 vColor;
+        
+            void main(void) {
+                gl_FragColor = vColor;
+            }
+        </script>
+        <script id="color-shader-vs" type="x-shader/x-vertex">  
+            attribute vec3 aVertexPosition;
+            attribute vec2 aTextureCoord;
+        
+            uniform mat4 uMVMatrix;
+            uniform mat4 uPMatrix;
+        
+            varying vec3 vColor;
+        
+        
+            void main(void) {
+                gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);
+                vColor = aColor;
+            }
+        </script>
     </head>
     <body>
+        <div id="debug-info">
+            <div>FPS:<span id="fps"></span></div>
+            <div>BX:<span id="bx"></span></div>
+            <div>BY:<span id="by"></span></div>
+            <div>CX:<span id="cx"></span></div>
+            <div>CY:<span id="cy"></span></div>
+            <div>CZ:<span id="cz"></span></div>
+        </div>
         <script type="text/javascript" src="js/main.js"></script>
     </body>
 </html>

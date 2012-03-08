@@ -1,211 +1,14 @@
-function Matrix4(){
-    this.m11 = this.m22 = this.m33 = this.m44 = 1.0;
 
-    this.m12 = this.m13 = this.m14 = 
-    this.m21 = this.m23 = this.m24 = 
-    this.m31 = this.m32 = this.m34 =
-    this.m41 = this.m42 = this.m43 = 0.0;
-}
-Matrix4.prototype.setTranslation = function(v){
-    this.m12 = v.x;
-    this.m24 = v.y;
-    this.m34 = v.z;
-};
-Matrix4.prototype.right = function(a) {
-    var r = a || new Vector3();
-    r.x = this.m11;
-    r.y = this.m21;
-    r.z = this.m31;
-    return r;
-};
-Matrix4.prototype.up = function(a) {
-    var r = a || new Vector3();
-    r.x = this.m12;
-    r.y = this.m22;
-    r.z = this.m32;
-    return r;
-};
-Matrix4.prototype.forward = function(a) {
-    var r = a || new Vector3();
-    r.x = this.m13;
-    r.y = this.m23;
-    r.z = this.m33;
-    return r;
-};
-Matrix4.prototype.multiply = function(a,b) {
-    var 
-    a11 = a.m11, a12 = a.m12, a13 = a.m13, a14 = a.m14,
-	a21 = a.m21, a22 = a.m22, a23 = a.m23, a24 = a.m24,
-	a31 = a.m31, a32 = a.m32, a33 = a.m33, a34 = a.m34,
-	a41 = a.m41, a42 = a.m42, a43 = a.m43, a44 = a.m44,
 
-	b11 = b.m11, b12 = b.m12, b13 = b.m13, b14 = b.n14,
-	b21 = b.m21, b22 = b.m22, b23 = b.m23, b24 = b.m24,
-	b31 = b.m31, b32 = b.m32, b33 = b.m33, b34 = b.m34,
-	b41 = b.m41, b42 = b.m42, b43 = b.m43, b44 = b.m44;    
+var blockSize = 1.0;
 
-    this.m11 = a11 * b11 + a12 * b21 + a13 * b31 + a14 * b41;
-	this.m12 = a11 * b12 + a12 * b22 + a13 * b32 + a14 * b42;
-	this.m13 = a11 * b13 + a12 * b23 + a13 * b33 + a14 * b43;
-	this.m14 = a11 * b14 + a12 * b24 + a13 * b34 + a14 * b44;
 
-	this.m21 = a21 * b11 + a22 * b21 + a23 * b31 + a24 * b41;
-	this.m22 = a21 * b12 + a22 * b22 + a23 * b32 + a24 * b42;
-	this.m23 = a21 * b13 + a22 * b23 + a23 * b33 + a24 * b43;
-	this.m24 = a21 * b14 + a22 * b24 + a23 * b34 + a24 * b44;
+var camera = new Camera();
+camera.transform.position.x = 4;
+camera.transform.position.y = 0;
+camera.transform.position.z = 4;
 
-	this.m31 = a31 * b11 + a32 * b21 + a33 * b31 + a34 * b41;
-	this.m32 = a31 * b12 + a32 * b22 + a33 * b32 + a34 * b42;
-	this.m33 = a31 * b13 + a32 * b23 + a33 * b33 + a34 * b43;
-	this.m34 = a31 * b14 + a32 * b24 + a33 * b34 + a34 * b44;
 
-	this.m41 = a41 * b11 + a42 * b21 + a43 * b31 + a44 * b41;
-	this.m42 = a41 * b12 + a42 * b22 + a43 * b32 + a44 * b42;
-	this.m43 = a41 * b13 + a42 * b23 + a43 * b33 + a44 * b43;
-	this.m44 = a41 * b14 + a42 * b24 + a43 * b34 + a44 * b44;
-
-    return this;
-};
-Matrix4.prototype.fromTranslation = function(translation) {
-    this.m14 = translation.x;
-    this.m24 = translation.y;
-    this.m34 = translation.z;
-};
-
-Matrix4.prototype.toArray = function(a) {
-	a[0] = this.m11; a[1] = this.m21; a[2] = this.m31; a[3] = this.m41;
-	a[4] = this.m12; a[5] = this.m22; a[6] = this.m32; a[7] = this.m42;
-	a[8]  = this.m13; a[9]  = this.m23; a[10] = this.m33; a[11] = this.m43;
-	a[12] = this.m14; a[13] = this.m24; a[14] = this.m34; a[15] = this.m44;
-
-	return a;
-};
-
-Matrix4.prototype.fromQuaternion = function(q) {
-    var xx      = q.x * q.x;
-    var xy      = q.x * q.y;
-    var xz      = q.x * q.z;
-    var xw      = q.x * q.w;
-    
-    var yy      = q.y * q.y;
-    var yz      = q.y * q.z;
-    var yw      = q.y * q.w;
-    
-    var zz      = q.z * q.z;
-    var zw      = q.z * q.w;    
-
-    this.m00  = 1 - 2 * ( yy + zz );
-    this.m01  =     2 * ( xy - zw );
-    this.m02 =     2 * ( xz + yw );
-    
-    this.m10  =     2 * ( xy + zw );
-    this.m11  = 1 - 2 * ( xx + zz );
-    this.m12  =     2 * ( yz - xw );
-    
-    this.m20  =     2 * ( xz - yw );
-    this.m21  =     2 * ( yz + xw );
-    this.m22  = 1 - 2 * ( xx + yy );
-    
-    this.m03  = this.m13 = this.m23 = this.m30 = this.m31 = this.m32 = 0;
-    this.m33 = 1;
-};
-
-function Vector3(x, y, z){
-    this.x = x || 0;
-    this.y = y || 0;
-    this.z = z || 0;
-}
-Vector3.prototype.add = function(v,r) {
-    r = r || new Vector3();
-    r = this.x + v.x;
-    r = this.y + v.y;
-    r = this.z + v.z;
-    return r;
-};
-Vector3.prototype.addSelf = function(v) {
-    this.add(v, this);
-    return this;
-};
-Vector3.prototype.adsubtract = function(v,r) {
-    r = r || new Vector3();
-    r = this.x - v.x;
-    r = this.y - v.y;
-    r = this.z - v.z;
-    return r;
-};
-Vector3.prototype.subtractSelf = function(v) {
-    this.subtract(v, this);
-    return this;
-};
-Vector3.prototype.multiplyScalar = function(s, r) {
-    r = r || new Vector3();
-    r = this.x * s;
-    r = this.y * s;
-    r = this.z * s;
-    return this;
-};
-Vector3.prototype.multiplyScalarSelf = function(s) {
-    this.multiplyScalar(s, this);
-    return this;
-};
-Vector3.X = new Vector3(1,0,0);
-Vector3.Y = new Vector3(0,1,0);
-Vector3.Z = new Vector3(0,0,1);
-
-function Quaternion(x, y, z, w){
-    this.x = x || 0;
-    this.y = y || 0;
-    this.z = z || 0;
-    this.w = w || 0;
-}
-Quaternion.prototype.fromAxisAngle = function(axis, angle) {
-    var halfAngle = angle*0.5;
-    var s =  Math.sin(halfAngle);
-    this.x = axis.x * s;
-    this.y = axis.y * s;
-    this.z = axis.z * s;
-    this.w = Math.cos(halfAngle);
-};
-
-Quaternion.prototype.multiply = function(q1,q2){
-    this.x =  q1.x * q2.w + q1.y * q2.z - q1.z * q2.y + q1.w * q2.x;
-    this.y = -q1.x * q2.z + q1.y * q2.w + q1.z * q2.x + q1.w * q2.y;
-    this.z =  q1.x * q2.y - q1.y * q2.x + q1.z * q2.w + q1.w * q2.z;
-    this.w = -q1.x * q2.x - q1.y * q2.y - q1.z * q2.z + q1.w * q2.w;
-}    
-function Transform(position, rotation) {
-    this.position = position || new Vector3();
-    this.position = rotation || new Quaternion();
-    this.localMatrix = new Matrix4();
-    this.worldMatrix = new Matrix4();
-}
-
-Transform.prototype.right = function(){
-    return this.localMatix.right();
-};
-/*
-Quaternion.prototype.mul = function(q) {
-
-}
-
-Quaternion.prototype.toMatrix = function(m) {
-}*/
-
-function Transform(){
-    this.position = new Vector3();
-    this.rotation = new Quaternion();
-    this.localMatrix = new Matrix4();
-    this.worldMatrix = new Matrix4();
-}
-function Camera() {
-    this.transform = new Transform();
-}
-var camera = {
-    transform:{
-        position: new Vector3(0.0,1.0,-5.0),
-        rotation: new Quaternion()
-    }
-};
 console.log(camera.transform.position[2]);
 
 
@@ -225,6 +28,18 @@ var map = {
     ]
 };
 
+function isPointInWall(v) {
+    var x = Math.floor(v.x / blockSize);
+    var y = Math.floor(v.z / blockSize);
+    x = Math.min(Math.max(0,x),map.width-1);
+    y = Math.min(Math.max(0,y),map.height-1);
+    
+    if(map.data[y * map.width + x] == 1) {
+        return true;
+    } else {
+        return false;
+    }
+}    
 console.log(map.width);
 console.log(map.height);
 window.requestAnimFrame = (function() {
@@ -391,6 +206,74 @@ function setMatrixUniforms() {
 
 function degToRad(degrees) {
     return degrees * Math.PI / 180;
+}
+var Mesh = {};
+Mesh.Primitive = {
+    Lines:0,
+    Triangles:1
+};
+
+var axis =  {
+    primitive:Mesh.Primitive.Lines,
+    position:[0, 0, 0, 1, 0, 0,
+              0, 0, 0, 0, 1, 0,
+              0, 0, 0, 0, 0, 1],
+    color:[1,0,0,
+           1,0,0,
+           0,1,0,
+           0,1,0,
+           0,0,1,
+           0,0,1],
+    texcoords:[],
+    indexes:[]
+};
+
+function convertToGL(primitive){
+    switch(primitive) {
+        case Mesh.Primitive.Lines:
+            return gl.LINES;
+        case Mesh.Primitive.Trianges:
+            return gl.TRIANGLES;
+    }
+}
+
+function renderMesh(mesh) {
+    if(mesh.position.length > 0 && mesh.positionBuffer === undefined) {
+        mesh.positionBuffer = gl.createBuffer();
+//        mesh.positionBuffer.itemSize = 3;
+//        mesh.positionBuffer.numItems = mesh.position.length / 3;
+        gl.bindBuffer(gl.ARRAY_BUFFER,mesh.positionBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(mesh.position), gl.STATIC_DRAW);
+    }
+    if(mesh.color.length > 0 && mesh.colorBuffer === undefined) {
+        mesh.colorBuffer = gl.createBuffer();
+//        mesh.positionBuffer.itemSize = 3;
+//        mesh.positionBuffer.numItems = mesh.position.length / 3;
+        gl.bindBuffer(gl.ARRAY_BUFFER,mesh.positionBuffer);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(mesh.color), gl.STATIC_DRAW);
+    }
+
+    if(mesh.indexes.length > 0 && mesh.indexBuffer == undefined) {
+        mesh.indexBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,mesh.indexBuffer);
+        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(mesh.indexes), gl.STATIC_DRAW);
+    }
+    
+    var mode = convertToGL(mesh.primitive);
+    if(mesh.indexes.length > 0 ) {
+        gl.drawElements(mode, mesh.indexes.length, gl.UNSIGNED_SHORT, 0);
+    } else {
+        var count =0;
+        switch(mode) {
+            case gl.LINES:
+                count = mesh.position.length / 2;
+                break;
+            case gl.TRIANGLES:
+                count = mesh.position.length / 3;
+                break;
+        }
+        gl.drawArrays(mode, 0, count);
+    }
 }
 
 var mapVertexPositionBuffer;
@@ -677,8 +560,14 @@ function drawScene() {
     mymat.setTranslation(camera.transform.position);
     mymat.toArray(f32array);
     mvMatrix = f32array;   
-//    mat4.translate(mvMatrix, [0.0, 0.0, camera.transform.position.z]);
-    
+    /*
+    mat4.identity(mvMatrix);
+    mat4.translate(mvMatrix, [camera.transform.position.x, camera.transform.position.y, camera.transform.position.z]);
+    if(keys[Input.Keys.D] === true) {
+        console.log("mat4");
+        console.log(mvMatrix);
+    }
+    */
 //    mat4.rotate(mvMatrix, degToRad(xRot), [1, 0, 0]);
 //    mat4.rotate(mvMatrix, degToRad(yRot), [0, 1, 0]);
 //    mat4.rotate(mvMatrix, degToRad(zRot), [0, 0, 1]);
@@ -696,26 +585,59 @@ function drawScene() {
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, mapVertexIndexBuffer);
     setMatrixUniforms();
     gl.drawElements(gl.TRIANGLES, mapVertexIndexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
+    
+    renderMesh(axis);
 }
 
 var lastTime = 0;
-
+var deltaTime = 0;
+var startTime = 0;
+var elapsedTime = 0;
 function animate() {
     var timeNow = new Date().getTime();
+    if(startTime === 0) {
+        startTime = timeNow;
+    }
+    elapsedTime = (timeNow - startTime)/1000;
+    
     if (lastTime !== 0) {
-        var elapsed = timeNow - lastTime;
+        deltaTime = (timeNow - lastTime)/1000;
 
-        xRot += (90 * elapsed) / 1000.0;
-        yRot += (90 * elapsed) / 1000.0;
-        zRot += (90 * elapsed) / 1000.0;
     }
     lastTime = timeNow;
 }
+var fps = document.getElementById('fps');
+
+var bx = document.getElementById('bx');
+var by = document.getElementById('by');
+
+var cx = document.getElementById('cx');
+var cy = document.getElementById('cy');
+var cz = document.getElementById('cz');
+
+var nextFPSUpdate = 0;
+function checkCollision(){
+    
+    if(elapsedTime > nextFPSUpdate) {
+        fps.innerHTML = Math.round((1/deltaTime));   
+        nextFPSUpdate = elapsedTime + 1.0;
+    }
+    bx.innerHTML = Math.floor(camera.transform.position.x / blockSize);    
+    by.innerHTML = Math.floor(camera.transform.position.z / blockSize);
+
+    cx.innerHTML = camera.transform.position.x;    
+    cy.innerHTML = camera.transform.position.y;
+    cz.innerHTML = (camera.transform.position.z).toString().substring(0,6);
+//    if(map.data[blockY* map.width * blockX])
+//    */
+}
+
 function tick() {
     window.requestAnimFrame(tick);
     drawScene();
     animate();
     handleInput();
+    checkCollision();
 }
 var canvas;
 
@@ -759,20 +681,28 @@ Input.Keys.DOWN = 40;
 Input.Keys.LEFT = 37;
 Input.Keys.RIGHT = 39;
 
+var speed = 1.0;
+
 function handleInput() {
+    var currentPosiiton = camera.transform.position.clone();
+    var newPosition = camera.transform.position.clone();
     if(keys[Input.Keys.W] === true) {
-        camera.transform.position.z += 0.5;
+        newPosition.addSelf(camera.transform.forward().multiplyScalar(speed * deltaTime));
     }
     if(keys[Input.Keys.S] === true) {
-        camera.transform.position.z -= 0.5;
+        newPosition.subtractSelf(camera.transform.forward().multiplyScalar(speed * deltaTime));
     }
     if(keys[Input.Keys.A] === true) {
-        camera.transform.position.add(camera.transform.right().multiplyScalar(2));
+        newPosition.addSelf(camera.transform.right().multiplyScalar(speed * deltaTime));
     }
-    if(keys[Input.Keys.A] === true) {
-        //position += right * scale
-        camera.transform.position.subtract(camera.transform.right().multiplyScalar(2));
+    if(keys[Input.Keys.D] === true) {
+        newPosition.subtractSelf(camera.transform.right().multiplyScalar(speed * deltaTime));
     }
+    
+    if(isPointInWall(newPosition) !== true) {
+        camera.transform.position = newPosition;
+    }
+    
     if(keys[Input.Keys.LEFT] === true) {
         camyrot -= 0.50;
     }
