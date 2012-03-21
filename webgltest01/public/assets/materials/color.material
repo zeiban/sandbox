@@ -1,4 +1,4 @@
 {
  vs:"shaders/color.vs",
  fs:"shaders/color.fs",
-{
+}

@@ -4,7 +4,7 @@ var blockSize = 1.0;
 
 
 var camera = new Camera();
-camera.transform.position.x = 4;
+camera.transform.position.x = 0;
 camera.transform.position.y = 0;
 camera.transform.position.z = 4;
 
@@ -287,8 +287,10 @@ function initBuffers() {
     var indexes = [];
     var indexOffset=0;
 
-    var xOffset = map.width * -0.5;
-    var yOffset = map.height * 0.5;
+    var xOffset = 0;
+    var yOffset = 0;
+//    var xOffset = map.width * -0.5;
+//    var yOffset = map.height * -0.5;
     
     for(y=0; y<map.height; y++) {
         for(x=0; x<map.width; x++) {
@@ -299,13 +301,34 @@ function initBuffers() {
                 vertices.push(x,0,y+1);
                 vertices.push(x+1,0,y+1);
                 */
-
+                /*
+                v1------v2
+                |      / |
+                |    /   |
+                |  /     |
+                v3------v4
+                */
+                //Floor Vertices
+                var fv1 = new Vector3(xOffset+x, -0.5, yOffset+y);
+                var fv2 = new Vector3(xOffset+x+1, -0.5, yOffset+y);
+                var fv3 = new Vector3(xOffset+x, -0.5, yOffset+y+1);
+                var fv4 = new Vector3(xOffset+x+1, -0.5, yOffset+y+1);
+                
+                //Celing Vertices
+                var cv1 = new Vector3(xOffset+x, 0.5, yOffset+y);
+                var cv2 = new Vector3(xOffset+x+1, 0.5, yOffset+y);
+                var cv3 = new Vector3(xOffset+x, 0.5, yOffset+y+1);
+                var cv4 = new Vector3(xOffset+x+1, 0.5, yOffset+y+1);
                 // floor
-                vertices.push(xOffset+x+1,-0.5,yOffset-y);
-                vertices.push(xOffset+x,-0.5,yOffset-y);
+                vertices.push(fv1.x, fv1.y, fv1.z);
+                vertices.push(fv2.x, fv2.y, fv2.z);
+                vertices.push(fv3.x, fv3.y, fv3.z);
+                vertices.push(fv4.x, fv4.y, fv4.z);
+                /*
+                vertices.push(xOffset+x,-0.5,yOffset+y);
                 vertices.push(xOffset+x+1,-0.5,yOffset-y-1);
                 vertices.push(xOffset+x,-0.5,yOffset-y-1);
-
+                */
                 texCoords.push(0.0,0.0);
                 texCoords.push(1.0,0.0);
                 texCoords.push(0.0,1.0);
@@ -698,7 +721,7 @@ function handleInput() {
     if(keys[Input.Keys.D] === true) {
         newPosition.subtractSelf(camera.transform.right().multiplyScalar(speed * deltaTime));
     }
-    
+
     if(isPointInWall(newPosition) !== true) {
         camera.transform.position = newPosition;
     }
@@ -746,5 +769,39 @@ gl.enable(gl.CULL_FACE);
 gl.cullFace(gl.BACK);
 gl.frontFace(gl.CW);
 tick();
+
+function load(url, callback) {
+    var xhr = new XMLHttpRequest();
+    var length = 0;
+    xhr.onreadystatechange = function(){
+        if(xhr.readyState === xhr.DONE) {
+            if(xhr.status === 200 || xhr.status === 0) {
+                if(xhr.responseText) {
+                    var  json = JSON.parse(xhr.responseText);
+                    console.log(json);
+                    
+                } else {
+                    console.warn("Http Request Failed");
+                }
+            } else {
+                console.error( "Couldn't load [" + url + "] [" + xhr.status + "]" );
+            }
+        } else if( xhr.readyState === xhr.LOADING) {
+            if(progressCallback) {
+                if(length === 0) {
+                    length  = xhr.getResponseHeader("Content-Length");
+                }
+                progressCallback();
+            }
+        } else if( xhr.readyState === xhr.HEADERS_RECEIVED) {
+            length = xhr.getResponseHeader("Content-Length");
+        }
+    };
+    xhr.open("GET",url, true);
+    xhr.setRequestHeader( "Content-Type", "text/plain" );
+    xhr.send(null);
+}
+
+load("assets/materials/color.material");
 //canvas.webkitRequestFullScreen(); 
 
