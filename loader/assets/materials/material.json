@@ -1,0 +1,4 @@
+{
+    "shader":"diffuse.json",
+    "textures":["floor.json"]
+}

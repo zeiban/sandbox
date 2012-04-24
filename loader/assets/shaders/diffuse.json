@@ -1,0 +1,5 @@
+{
+    "type":"shader",
+    "vertex":"diffuse.vert",    
+    "fragment":"diffuse.frag"    
+}
