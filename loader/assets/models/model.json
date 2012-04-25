@@ -1,4 +1,7 @@
 {
-    "mesh":"mesh.json",
-    "material":"material.json"
+    "type":"model",
+    "data":{
+        "mesh":"mesh.json",
+        "material":"material.json"
+    }
 }
