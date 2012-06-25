@@ -10,7 +10,11 @@ define(function(){
             this.x = x;
             this.y = y;
             this.z = z;
+        },
+        length:function(){
+            return Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z);
         }
+        
     };
     return Vector3;
 });
