@@ -27,15 +27,9 @@ function onResize(){
 
 var objects = {};
 
-function update() {
-    for(var prop in objects) {
-        var obj = objects[prop];
-        obj.position.x += obj.velocity.x*deltaTime;
-        obj.position.y += obj.velocity.y*deltaTime;
-    }
-}
 
-require(['Messages'], function(Messages) {
+require(['Messages','Input'], function(Messages,Input) {
+    
     var socket = io.connect();
     socket.on('connect', function () {
         console.log('Connected');
@@ -72,6 +66,38 @@ require(['Messages'], function(Messages) {
             }
         });
     });
+
+    window.addEventListener('keydown', function(){
+        if(event.keyCode === Input.Keys.A) {
+            socket.json.send({id:Messages.MOVE_LEFT,data:{state:1}});
+        } else if (event.keyCode === Input.Keys.D) {
+            socket.json.send({id:Messages.MOVE_RIGHT,data:{state:1}});
+        }
+    }, false);
+    
+    window.addEventListener('keyup', function(){
+        if(event.keyCode === Input.Keys.A) {
+            socket.json.send({id:Messages.MOVE_LEFT,data:{state:0}});
+        } else if (event.keyCode === Input.Keys.D) {
+            socket.json.send({id:Messages.MOVE_RIGHT,data:{state:0}});
+        }
+    }, false);
+    
+    function update() {
+        for(var prop in objects) {
+            var obj = objects[prop];
+            if(parseInt(prop) === playerId) {
+                if(Input.isKeyDown(Input.Keys.A)) {
+                    obj.velocity.x = -30;
+                }
+                if(Input.isKeyDown(Input.Keys.D)) {
+                    obj.velocity.x = 30;
+                }
+            }
+            obj.position.x += obj.velocity.x*deltaTime;
+            obj.position.y += obj.velocity.y*deltaTime;
+        }
+    }
     
     function draw(){
         if(isConnected) {
