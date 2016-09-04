@@ -1,0 +1,8 @@
+.vs
+Debug
+Release
+x64
+packages
+DX11Test01/Release
+DX11Test01/Debug
+DX11Test01/x64
