@@ -586,7 +586,6 @@ void ReleaseD3D()
 	if (g_noCull != NULL) g_noCull->Release();
 
 	if (g_pMesh != NULL) g_pMesh->Destroy();
-
 	//g_pVertexShader->Release();
 //	g_pPixelShader->Release();
 }
@@ -858,6 +857,10 @@ void RenderScene()
 	g_d3d11DevCon->PSSetShaderResources(0, 1, g_pTexture->GetTexture());
 	g_pMesh->Render(g_d3d11DevCon);
 
+	g_d3d11DevCon->RSSetState(g_CWcullMode);
+	g_d3d11DevCon->DrawIndexed(36, 0, 0);
+
+	g_d3d11DevCon->RSSetState(g_CCWcullMode);
 	g_d3d11DevCon->DrawIndexed(36, 0, 0);
 
 	g_swapChain->Present(0, 0);
