@@ -87,8 +87,5 @@
     <Image Include="font.png">
       <Filter>Resource Files</Filter>
     </Image>
-    <Image Include="D:\Temp\fieldstone.jpg">
-      <Filter>Resource Files</Filter>
-    </Image>
   </ItemGroup>
 </Project>

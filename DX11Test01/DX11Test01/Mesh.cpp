@@ -48,7 +48,8 @@ void Mesh::Create(ID3D11Device* pDevice)
 void Mesh::Render(ID3D11DeviceContext* pDeviceContext)
 {
 	UINT stride = sizeof(Vertex);
-	pDeviceContext->IASetVertexBuffers(0, 1, &m_pVertexBuffer, &stride, 0);
+	UINT offset = 0;
+	pDeviceContext->IASetVertexBuffers(0, 1, &m_pVertexBuffer, &stride, &offset);
 	if (m_pIndexBuffer != NULL)
 	{
 		pDeviceContext->IASetIndexBuffer(m_pIndexBuffer, DXGI_FORMAT_R32_UINT, 0);

@@ -4,6 +4,7 @@ SamplerState ObjSamplerState;
 struct VS_OUTPUT
 {
 	float4 Pos : SV_POSITION;
+	float3 Normal : NORMAL;
 	float2 TexCoord : TEXCOORD;
 };
 

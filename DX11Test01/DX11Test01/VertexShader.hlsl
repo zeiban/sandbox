@@ -9,10 +9,11 @@ SamplerState ObjSamplerState;
 struct VS_OUTPUT
 {
 	float4 Pos : SV_POSITION;
+	float3 Normal : NORMAL;
 	float2 TexCoord : TEXCOORD;
 };
 
-VS_OUTPUT main(float4 inPos : POSITION, float2 inTexCoord : TEXCOORD)
+VS_OUTPUT main(float4 inPos : POSITION, float3 inNormal : NORMAL, float2 inTexCoord : TEXCOORD)
 {
 	VS_OUTPUT output;
 

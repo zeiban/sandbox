@@ -593,151 +593,14 @@ void ReleaseD3D()
 
 bool InitScene()
 {
+	HRESULT hr;
 	g_pMesh = Mesh::Cube();
 	g_pTexture = new Texture2D();
 	g_pShader = new Shader();
 
 	g_pTexture->Create(g_d3d11Device, L"fieldstone.jpg");
 	g_pShader->Create(g_d3d11Device, L"VertexShader.hlsl", L"PixelShader.hlsl");
-
-	HRESULT hr;
-	ID3DBlob* errorBlob = nullptr;
-//	hr = D3DCompileFromFile(L"Effect.fx", 0, 0, "VS", "vs_5_0", 0, 0, &g_VS_Buffer, &errorBlob);
-//	hr = D3DCompileFromFile(L"Effect.fx", 0, 0, "PS", "ps_5_0", 0, 0, &g_PS_Buffer, &errorBlob);
-//	hr = g_d3d11Device->CreateVertexShader(g_VS_Buffer->GetBufferPointer(), g_VS_Buffer->GetBufferSize(), NULL, &g_VS);
-//	hr = g_d3d11Device->CreatePixelShader(g_PS_Buffer->GetBufferPointer(), g_PS_Buffer->GetBufferSize(), NULL, &g_PS);
-
-	
-//	g_pVertexShader->Create(g_d3d11Device, L"VertexShader.hlsl");
-//	g_pPixelShader->Create(g_d3d11Device, L"PixelShader.hlsl");
-	g_pTextureShader->Create(g_d3d11Device, L"VertexShader.hlsl", L"PixelShader.hlsl");
-	hr = D3DCompileFromFile(L"TextVertexShader.hlsl", 0, 0, "main", "vs_5_0", 0, 0, &g_textVSBytecode, &errorBlob);
-	hr = D3DCompileFromFile(L"TextPixelShader.hlsl", 0, 0, "main", "ps_5_0", 0, 0, &g_textPSBytecode, &errorBlob);
-	hr = g_d3d11Device->CreateVertexShader(g_textVSBytecode->GetBufferPointer(), g_textVSBytecode->GetBufferSize(), NULL, &g_textVS);
-	hr = g_d3d11Device->CreatePixelShader(g_textPSBytecode->GetBufferPointer(), g_textPSBytecode->GetBufferSize(), NULL, &g_textPS);
-	
-//	g_d3d11DevCon->VSSetShader(g_pVertexShader->GetVertexShader(), 0, 0);
-//	g_d3d11DevCon->VSSetShader(g_VS, 0, 0);
-//	g_d3d11DevCon->PSSetShader(g_PS, 0, 0);
 	g_pMesh->Create(g_d3d11Device);
-
-	PositionTexCoordVertex v[] =
-	{
-		// Front Face
-		PositionTexCoordVertex(-1.0f, -1.0f, -1.0f, 0.0f, 1.0f),
-		PositionTexCoordVertex(-1.0f,  1.0f, -1.0f, 0.0f, 0.0f),
-		PositionTexCoordVertex(1.0f,  1.0f, -1.0f, 1.0f, 0.0f),
-		PositionTexCoordVertex(1.0f, -1.0f, -1.0f, 1.0f, 1.0f),
-
-		// Back Face
-		PositionTexCoordVertex(-1.0f, -1.0f, 1.0f, 1.0f, 1.0f),
-		PositionTexCoordVertex(1.0f, -1.0f, 1.0f, 0.0f, 1.0f),
-		PositionTexCoordVertex(1.0f,  1.0f, 1.0f, 0.0f, 0.0f),
-		PositionTexCoordVertex(-1.0f,  1.0f, 1.0f, 1.0f, 0.0f),
-
-		// Top Face
-		PositionTexCoordVertex(-1.0f, 1.0f, -1.0f, 0.0f, 1.0f),
-		PositionTexCoordVertex(-1.0f, 1.0f,  1.0f, 0.0f, 0.0f),
-		PositionTexCoordVertex(1.0f, 1.0f,  1.0f, 1.0f, 0.0f),
-		PositionTexCoordVertex(1.0f, 1.0f, -1.0f, 1.0f, 1.0f),
-
-		// Bottom Face
-		PositionTexCoordVertex(-1.0f, -1.0f, -1.0f, 1.0f, 1.0f),
-		PositionTexCoordVertex(1.0f, -1.0f, -1.0f, 0.0f, 1.0f),
-		PositionTexCoordVertex(1.0f, -1.0f,  1.0f, 0.0f, 0.0f),
-		PositionTexCoordVertex(-1.0f, -1.0f,  1.0f, 1.0f, 0.0f),
-
-		// Left Face
-		PositionTexCoordVertex(-1.0f, -1.0f,  1.0f, 0.0f, 1.0f),
-		PositionTexCoordVertex(-1.0f,  1.0f,  1.0f, 0.0f, 0.0f),
-		PositionTexCoordVertex(-1.0f,  1.0f, -1.0f, 1.0f, 0.0f),
-		PositionTexCoordVertex(-1.0f, -1.0f, -1.0f, 1.0f, 1.0f),
-
-		// Right Face
-		PositionTexCoordVertex(1.0f, -1.0f, -1.0f, 0.0f, 1.0f),
-		PositionTexCoordVertex(1.0f,  1.0f, -1.0f, 0.0f, 0.0f),
-		PositionTexCoordVertex(1.0f,  1.0f,  1.0f, 1.0f, 0.0f),
-		PositionTexCoordVertex(1.0f, -1.0f,  1.0f, 1.0f, 1.0f),
-	};
-
-	DWORD indices[] = {
-		0,  1,  2,
-		0,  2,  3,
-
-		4,  5,  6,
-		4,  6,  7,
-
-		8,  9, 10,
-		8, 10, 11,
-
-		12, 13, 14,
-		12, 14, 15,
-
-		16, 17, 18,
-		16, 18, 19,
-
-		20, 21, 22,
-		20, 22, 23
-	};
-
-	D3D11_BUFFER_DESC vertexBufferDesc;
-	ZeroMemory(&vertexBufferDesc, sizeof(vertexBufferDesc));
-
-	vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-	vertexBufferDesc.ByteWidth = sizeof(PositionTexCoordVertex) * 24;
-	vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-	vertexBufferDesc.CPUAccessFlags = 0;
-	vertexBufferDesc.MiscFlags = 0;
-
-	D3D11_SUBRESOURCE_DATA vertexBufferData;
-	ZeroMemory(&vertexBufferData, sizeof(vertexBufferData));
-
-	vertexBufferData.pSysMem = v;
-
-	hr = g_d3d11Device->CreateBuffer(&vertexBufferDesc, &vertexBufferData, &g_squareVertBuffer);
-
-	// Create text VB
-	/**
-	ZeroMemory(&vertexBufferDesc, sizeof(vertexBufferDesc));
-	vertexBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
-	vertexBufferDesc.ByteWidth = sizeof(TextVertex) * g_maxNumTextCharacters;
-	vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-	vertexBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-	vertexBufferDesc.MiscFlags = 0;
-	vertexBufferDesc.StructureByteStride = 0;
-
-	ZeroMemory(&vertexBufferData, sizeof(vertexBufferData));
-	vertexBufferData.pSysMem = v;
-
-	hr = g_d3d11Device->CreateBuffer(&vertexBufferDesc, &vertexBufferData, &g_textVertexBuffer);
-	**/
-	UINT stride = sizeof(PositionTexCoordVertex);
-	UINT offset = 0;
-	g_d3d11DevCon->IASetVertexBuffers(0, 1, &g_squareVertBuffer, &stride, &offset);
-	/**
-	hr = g_d3d11Device->CreateInputLayout(g_layout, g_numElements, g_VS_Buffer->GetBufferPointer(),
-		g_VS_Buffer->GetBufferSize(), &g_vertLayout);
-
-	g_d3d11DevCon->IASetInputLayout(g_vertLayout);
-	**/
-
-
-	D3D11_BUFFER_DESC indexBufferDesc;
-	ZeroMemory(&indexBufferDesc, sizeof(indexBufferDesc));
-
-	indexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-	indexBufferDesc.ByteWidth = sizeof(DWORD) * 12 * 3;
-	indexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
-	indexBufferDesc.CPUAccessFlags = 0;
-	indexBufferDesc.MiscFlags = 0;
-
-	D3D11_SUBRESOURCE_DATA iinitData;
-	iinitData.pSysMem = indices;
-	
-	g_d3d11Device->CreateBuffer(&indexBufferDesc, &iinitData, &g_squareIndexBuffer);
-	g_d3d11DevCon->IASetIndexBuffer(g_squareIndexBuffer, DXGI_FORMAT_R32_UINT, 0);
-
-	g_d3d11DevCon->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 	D3D11_VIEWPORT viewport;
 	ZeroMemory(&viewport, sizeof(D3D11_VIEWPORT));
@@ -945,6 +808,12 @@ void RenderScene()
 
 	float cube2Dist = distX*distX + distY*distY + distZ*distZ;
 
+	UINT stride = sizeof(PositionTexCoordVertex);
+	UINT offset = 0;
+	g_d3d11DevCon->IASetVertexBuffers(0, 1, &g_squareVertBuffer, &stride, &offset);
+	g_d3d11DevCon->IASetIndexBuffer(g_squareIndexBuffer, DXGI_FORMAT_R32_UINT, 0);
+	g_d3d11DevCon->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
 	if (cube1Dist < cube2Dist)
 	{
 		//Switch the order in which the cubes are drawn
@@ -955,37 +824,41 @@ void RenderScene()
 
 	g_WVP = g_cube1World * g_camView * g_camProjection;
 	cbPerObj.WVP = XMMatrixTranspose(g_WVP);
-
+	
 	g_d3d11DevCon->UpdateSubresource(g_cbPerObjectBuffer, 0, NULL, &cbPerObj, 0, 0);
 	g_d3d11DevCon->VSSetConstantBuffers(0, 1, &g_cbPerObjectBuffer);
 	g_d3d11DevCon->PSSetShaderResources(0, 1, &g_cubesTexture);
-//	g_d3d11DevCon->PSSetSamplers(0, 1, &g_cubesTexSamplerState);
+	g_d3d11DevCon->PSSetSamplers(0, 1, &g_cubesTexSamplerState);
 
 	g_d3d11DevCon->RSSetState(g_noCull);
 
 //	g_d3d11DevCon->RSSetState(g_CCWcullMode);
-	g_d3d11DevCon->DrawIndexed(36, 0, 0);
+//	g_d3d11DevCon->DrawIndexed(3, 0, 0);
 
 //	g_d3d11DevCon->RSSetState(g_CWcullMode);
-	g_d3d11DevCon->DrawIndexed(36, 0, 0);
+//	g_d3d11DevCon->DrawIndexed(36, 0, 0);
 
 
-	g_WVP = g_cube2World * g_camView * g_camProjection;
-	cbPerObj.WVP = XMMatrixTranspose(g_WVP);
-	g_d3d11DevCon->UpdateSubresource(g_cbPerObjectBuffer, 0, NULL, &cbPerObj, 0, 0);
-	g_d3d11DevCon->VSSetConstantBuffers(0, 1, &g_cbPerObjectBuffer);
-	g_d3d11DevCon->PSSetShaderResources(0, 1, &g_cubesTexture);
+//	g_WVP = g_cube2World * g_camView * g_camProjection;
+//	cbPerObj.WVP = XMMatrixTranspose(g_WVP);
+//	g_d3d11DevCon->UpdateSubresource(g_cbPerObjectBuffer, 0, NULL, &cbPerObj, 0, 0);
+//	g_d3d11DevCon->VSSetConstantBuffers(0, 1, &g_cbPerObjectBuffer);
+//	g_d3d11DevCon->PSSetShaderResources(0, 1, &g_cubesTexture);
 //	g_d3d11DevCon->PSSetSamplers(0, 1, &g_cubesTexSamplerState);
 
 //	g_d3d11DevCon->RSSetState(g_CCWcullMode);
-	g_d3d11DevCon->DrawIndexed(36, 0, 0);
+//	g_d3d11DevCon->DrawIndexed(36, 0, 0);
 
 //	g_d3d11DevCon->RSSetState(g_CWcullMode);
-	g_d3d11DevCon->DrawIndexed(36, 0, 0);
+//	g_d3d11DevCon->DrawIndexed(36, 0, 0);
 	
 	g_pShader->Render(g_d3d11DevCon);
+	g_d3d11DevCon->UpdateSubresource(g_cbPerObjectBuffer, 0, NULL, &cbPerObj, 0, 0);
+	g_d3d11DevCon->VSSetConstantBuffers(0, 1, &g_cbPerObjectBuffer);
 	g_d3d11DevCon->PSSetShaderResources(0, 1, g_pTexture->GetTexture());
 	g_pMesh->Render(g_d3d11DevCon);
+
+	g_d3d11DevCon->DrawIndexed(36, 0, 0);
 
 	g_swapChain->Present(0, 0);
 }
