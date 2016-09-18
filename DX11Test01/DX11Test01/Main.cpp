@@ -82,6 +82,7 @@ XMMATRIX g_translation;
 float rot = 0.01f;
 
 Mesh* g_pMesh;
+Material g_Material;
 Texture2D* g_pTexture;
 Shader* g_pShader;
 struct PositionTexCoordVertex
@@ -106,8 +107,6 @@ struct cbPerObject
 {
 	DirectX::XMMATRIX  WVP;
 };
-
-cbPerObject cbPerObj;
 
 //The input-layout description
 D3D11_INPUT_ELEMENT_DESC g_layout[] =
@@ -586,6 +585,7 @@ void ReleaseD3D()
 	if (g_noCull != NULL) g_noCull->Release();
 
 	if (g_pMesh != NULL) g_pMesh->Destroy();
+	g_Material.Destroy();
 	//g_pVertexShader->Release();
 //	g_pPixelShader->Release();
 }
@@ -600,6 +600,7 @@ bool InitScene()
 	g_pTexture->Create(g_d3d11Device, L"fieldstone.jpg");
 	g_pShader->Create(g_d3d11Device, L"VertexShader.hlsl", L"PixelShader.hlsl");
 	g_pMesh->Create(g_d3d11Device);
+	g_Material.Create(g_d3d11Device, g_pShader, g_pTexture);
 
 	D3D11_VIEWPORT viewport;
 	ZeroMemory(&viewport, sizeof(D3D11_VIEWPORT));
@@ -624,7 +625,7 @@ bool InitScene()
 	
 	hr = g_d3d11Device->CreateBuffer(&cbbd, NULL, &g_cbPerObjectBuffer);
 
-	g_camPosition = XMVectorSet(0.0f, 3.0f, -8.0f, 0.0f);
+	g_camPosition = XMVectorSet(0.0f, 3.0f, -5.0f, 0.0f);
 	g_camTarget = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
 	g_camUp = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
 
@@ -785,9 +786,9 @@ void RenderScene()
 	g_d3d11DevCon->ClearDepthStencilView(g_depthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 	g_d3d11DevCon->ClearRenderTargetView(g_renderTargetView, bgColor);
 
-	float blendFactor[] = { 0.75f, 0.75f, 0.75f, 1.0f };
-	g_d3d11DevCon->OMSetBlendState(0, 0, 0xffffffff);
-	g_d3d11DevCon->OMSetBlendState(g_transparency, blendFactor, 0xffffffff);
+	//float blendFactor[] = { 0.75f, 0.75f, 0.75f, 1.0f };
+	//g_d3d11DevCon->OMSetBlendState(0, 0, 0xffffffff);
+	//g_d3d11DevCon->OMSetBlendState(g_transparency, blendFactor, 0xffffffff);
 
 	XMVECTOR cubePos = XMVectorZero();
 	cubePos = XMVector3TransformCoord(cubePos, g_cube1World);
@@ -806,61 +807,34 @@ void RenderScene()
 	distZ = XMVectorGetZ(cubePos) - XMVectorGetZ(g_camPosition);
 
 	float cube2Dist = distX*distX + distY*distY + distZ*distZ;
-
-	UINT stride = sizeof(PositionTexCoordVertex);
-	UINT offset = 0;
-	g_d3d11DevCon->IASetVertexBuffers(0, 1, &g_squareVertBuffer, &stride, &offset);
-	g_d3d11DevCon->IASetIndexBuffer(g_squareIndexBuffer, DXGI_FORMAT_R32_UINT, 0);
-	g_d3d11DevCon->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
+	/**
 	if (cube1Dist < cube2Dist)
 	{
 		//Switch the order in which the cubes are drawn
 		XMMATRIX tempMatrix = g_cube1World;
 		g_cube1World = g_cube2World;
 		g_cube2World = tempMatrix;
-	}
+	}**/
 
-	g_WVP = g_cube1World * g_camView * g_camProjection;
-	cbPerObj.WVP = XMMatrixTranspose(g_WVP);
+	//g_WVP = g_cube2World * g_camView * g_camProjection;
+	//cbPerObj.WVP = XMMatrixTranspose(g_WVP);
 	
-	g_d3d11DevCon->UpdateSubresource(g_cbPerObjectBuffer, 0, NULL, &cbPerObj, 0, 0);
-	g_d3d11DevCon->VSSetConstantBuffers(0, 1, &g_cbPerObjectBuffer);
-	g_d3d11DevCon->PSSetShaderResources(0, 1, &g_cubesTexture);
-	g_d3d11DevCon->PSSetSamplers(0, 1, &g_cubesTexSamplerState);
 
-	g_d3d11DevCon->RSSetState(g_noCull);
-
-//	g_d3d11DevCon->RSSetState(g_CCWcullMode);
-//	g_d3d11DevCon->DrawIndexed(3, 0, 0);
-
-//	g_d3d11DevCon->RSSetState(g_CWcullMode);
-//	g_d3d11DevCon->DrawIndexed(36, 0, 0);
-
-
-//	g_WVP = g_cube2World * g_camView * g_camProjection;
-//	cbPerObj.WVP = XMMatrixTranspose(g_WVP);
+	g_Material.Render(g_d3d11DevCon, g_cube2World, g_camView, g_camProjection);
+//	g_pShader->Render(g_d3d11DevCon);
 //	g_d3d11DevCon->UpdateSubresource(g_cbPerObjectBuffer, 0, NULL, &cbPerObj, 0, 0);
 //	g_d3d11DevCon->VSSetConstantBuffers(0, 1, &g_cbPerObjectBuffer);
-//	g_d3d11DevCon->PSSetShaderResources(0, 1, &g_cubesTexture);
-//	g_d3d11DevCon->PSSetSamplers(0, 1, &g_cubesTexSamplerState);
-
-//	g_d3d11DevCon->RSSetState(g_CCWcullMode);
-//	g_d3d11DevCon->DrawIndexed(36, 0, 0);
-
-//	g_d3d11DevCon->RSSetState(g_CWcullMode);
-//	g_d3d11DevCon->DrawIndexed(36, 0, 0);
-	
-	g_pShader->Render(g_d3d11DevCon);
-	g_d3d11DevCon->UpdateSubresource(g_cbPerObjectBuffer, 0, NULL, &cbPerObj, 0, 0);
-	g_d3d11DevCon->VSSetConstantBuffers(0, 1, &g_cbPerObjectBuffer);
-	g_d3d11DevCon->PSSetShaderResources(0, 1, g_pTexture->GetTexture());
+//	g_d3d11DevCon->PSSetShaderResources(0, 1, g_pTexture->GetTexture());
 	g_pMesh->Render(g_d3d11DevCon);
+	
 
 	g_d3d11DevCon->RSSetState(g_CWcullMode);
 	g_d3d11DevCon->DrawIndexed(36, 0, 0);
 
-	g_d3d11DevCon->RSSetState(g_CCWcullMode);
+//	g_d3d11DevCon->RSSetState(g_CCWcullMode);
+//	g_d3d11DevCon->DrawIndexed(36, 0, 0);
+
+	g_Material.Render(g_d3d11DevCon, g_cube1World, g_camView, g_camProjection);
 	g_d3d11DevCon->DrawIndexed(36, 0, 0);
 
 	g_swapChain->Present(0, 0);

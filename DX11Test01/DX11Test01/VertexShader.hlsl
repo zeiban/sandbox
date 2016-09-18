@@ -1,6 +1,9 @@
 cbuffer cbPerObject
 {
 	float4x4 WVP;
+	float4x4 W;
+	float4x4 V;
+	float4x4 P;
 };
 
 Texture2D ObjTexture;
