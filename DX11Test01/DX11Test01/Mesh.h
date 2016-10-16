@@ -26,9 +26,22 @@ public:
 	void Render(ID3D11DeviceContext* pDeviceContext);
 	void Destroy(void);
 	static Mesh* Cube(void);
+	static Mesh* Terrain(void);
+	int GetVertexCount();
+	int GetIndexCount();
 private:
 	std::vector<Vertex> m_vertices;
 	std::vector<DWORD> m_indices;
 	ID3D11Buffer* m_pIndexBuffer;
 	ID3D11Buffer* m_pVertexBuffer;
+};
+
+inline int Mesh::GetVertexCount()
+{
+	return m_vertices.size();
+};
+
+inline int Mesh::GetIndexCount()
+{
+	return m_indices.size();
 };

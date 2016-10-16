@@ -8,13 +8,14 @@ Mesh::Mesh(const std::vector<Vertex>& vertices, const std::vector<DWORD>& indice
 
 void Mesh::Create(ID3D11Device* pDevice)
 {
+	HRESULT hr;
 	if (m_pVertexBuffer == NULL)
 	{
 		D3D11_BUFFER_DESC vertexBufferDesc;
 		ZeroMemory(&vertexBufferDesc, sizeof(vertexBufferDesc));
 
 		vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-		vertexBufferDesc.ByteWidth = sizeof(Vertex) * m_indices.size();
+		vertexBufferDesc.ByteWidth = sizeof(Vertex) * m_vertices.size();
 		vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 		vertexBufferDesc.CPUAccessFlags = 0;
 		vertexBufferDesc.MiscFlags = 0;
@@ -24,7 +25,12 @@ void Mesh::Create(ID3D11Device* pDevice)
 
 		vertexBufferData.pSysMem = &m_vertices[0];
 
-		pDevice->CreateBuffer(&vertexBufferDesc, &vertexBufferData, &m_pVertexBuffer);
+		hr = pDevice->CreateBuffer(&vertexBufferDesc, &vertexBufferData, &m_pVertexBuffer);
+		if (hr != S_OK)
+		{
+			MessageBox(nullptr , L"dasdad", L"RTTOT", MB_OK);
+		}
+
 	}
 
 	if (m_pIndexBuffer == NULL)
@@ -42,7 +48,12 @@ void Mesh::Create(ID3D11Device* pDevice)
 		ZeroMemory(&indexSubrecourceData, sizeof(indexSubrecourceData));
 		indexSubrecourceData.pSysMem = &m_indices[0];
 
-		pDevice->CreateBuffer(&indexBufferDesc, &indexSubrecourceData, &m_pIndexBuffer);
+		hr = pDevice->CreateBuffer(&indexBufferDesc, &indexSubrecourceData, &m_pIndexBuffer);
+
+		if (hr != S_OK)
+		{
+			MessageBox(nullptr, L"dasdad", L"RTTOT", MB_OK);
+		}
 	}
 }
 void Mesh::Render(ID3D11DeviceContext* pDeviceContext)
@@ -61,6 +72,41 @@ void Mesh::Destroy(void)
 	if (m_pVertexBuffer != NULL) m_pVertexBuffer->Release();
 	if (m_pIndexBuffer != NULL) m_pIndexBuffer->Release();
 
+}
+Mesh* Mesh::Terrain(void)
+{
+	int size = 32;
+	std::vector<Vertex> vertices;
+	std::vector<DWORD> indices;
+
+	for (int y = 0; y < size +1; y++)
+	{
+		for (int x = 0; x < size +1; x++)
+		{
+			vertices.push_back(Vertex(x * 8, 0.0f, y * 8, 0.0f, 1.0f, 0.0f, x * 8, y * 8 ));
+		}
+	}
+
+	for (int y = 0; y < size; y++)
+	{
+		for (int x = 0; x < size; x++)
+		{
+			int v1 = x + y * (size + 1);
+			int v2 = v1 + 1;
+			int v3 = v1 + size + 1;
+			int v4 = v1 + size + 2;
+
+			indices.push_back(v1);
+			indices.push_back(v3);
+			indices.push_back(v2);
+
+			indices.push_back(v3);
+			indices.push_back(v4);
+			indices.push_back(v2);
+		}
+	}
+
+	return new Mesh(vertices, indices);
 }
 
 Mesh* Mesh::Cube(void)

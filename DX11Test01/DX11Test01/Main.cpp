@@ -16,6 +16,8 @@
 #include "Material.h"
 #include "Texture2D.h"
 #include "VertexShader.h"
+#include "Octree.h"
+#include "Camera.h"
 
 using namespace DirectX;
 
@@ -28,6 +30,8 @@ const int g_width = 800;
 const int g_height = 600;
 const int g_maxNumTextCharacters = 1024;
 
+OctreeNode* g_pOctree;
+Camera* g_pCamera;
 
 IDXGISwapChain* g_swapChain;
 ID3D11Device* g_d3d11Device;
@@ -82,9 +86,11 @@ XMMATRIX g_translation;
 float rot = 0.01f;
 
 Mesh* g_pMesh;
+Mesh* g_pTerrain;
 Material g_Material;
 Texture2D* g_pTexture;
 Shader* g_pShader;
+
 struct PositionTexCoordVertex
 {
 	PositionTexCoordVertex() {}
@@ -592,14 +598,21 @@ void ReleaseD3D()
 
 bool InitScene()
 {
+	g_pOctree = new OctreeNode(NULL, Vector3(0.0, 0.0, 0.0), 1024, 4);
+	g_pCamera = new Camera();
+	Vector3 v1(0.0, 1.0, 1.0);
+	double length = v1.Length();
+
 	HRESULT hr;
 	g_pMesh = Mesh::Cube();
+	g_pTerrain = Mesh::Terrain();
 	g_pTexture = new Texture2D();
 	g_pShader = new Shader();
 
 	g_pTexture->Create(g_d3d11Device, L"fieldstone.jpg");
 	g_pShader->Create(g_d3d11Device, L"VertexShader.hlsl", L"PixelShader.hlsl");
 	g_pMesh->Create(g_d3d11Device);
+	g_pTerrain->Create(g_d3d11Device);
 	g_Material.Create(g_d3d11Device, g_pShader, g_pTexture);
 
 	D3D11_VIEWPORT viewport;
@@ -625,7 +638,7 @@ bool InitScene()
 	
 	hr = g_d3d11Device->CreateBuffer(&cbbd, NULL, &g_cbPerObjectBuffer);
 
-	g_camPosition = XMVectorSet(0.0f, 3.0f, -5.0f, 0.0f);
+	g_camPosition = XMVectorSet(0.0f, 4.0f, -5.0f, 0.0f);
 	g_camTarget = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
 	g_camUp = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
 
@@ -686,7 +699,7 @@ bool InitScene()
 
 void UpdateScene(float delta)
 {
-	rot += .0005f;
+	//rot += .00005f;
 	if (rot > 6.26f)
 		rot = 0.0f;
 
@@ -825,17 +838,17 @@ void RenderScene()
 //	g_d3d11DevCon->UpdateSubresource(g_cbPerObjectBuffer, 0, NULL, &cbPerObj, 0, 0);
 //	g_d3d11DevCon->VSSetConstantBuffers(0, 1, &g_cbPerObjectBuffer);
 //	g_d3d11DevCon->PSSetShaderResources(0, 1, g_pTexture->GetTexture());
-	g_pMesh->Render(g_d3d11DevCon);
-	
+	g_pTerrain->Render(g_d3d11DevCon);
+//	g_pMesh->Render(g_d3d11DevCon);
 
 	g_d3d11DevCon->RSSetState(g_CWcullMode);
-	g_d3d11DevCon->DrawIndexed(36, 0, 0);
+	g_d3d11DevCon->DrawIndexed(g_pTerrain->GetIndexCount(), 0, 0);
 
-//	g_d3d11DevCon->RSSetState(g_CCWcullMode);
+	g_d3d11DevCon->RSSetState(g_CCWcullMode);
 //	g_d3d11DevCon->DrawIndexed(36, 0, 0);
 
-	g_Material.Render(g_d3d11DevCon, g_cube1World, g_camView, g_camProjection);
-	g_d3d11DevCon->DrawIndexed(36, 0, 0);
+//	g_Material.Render(g_d3d11DevCon, g_cube1World, g_camView, g_camProjection);
+	g_d3d11DevCon->DrawIndexed(g_pTerrain->GetIndexCount(), 0, 0);
 
 	g_swapChain->Present(0, 0);
 }
