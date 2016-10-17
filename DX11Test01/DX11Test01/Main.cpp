@@ -642,8 +642,9 @@ bool InitScene()
 	g_camTarget = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
 	g_camUp = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
 
-	g_camView = XMMatrixLookAtLH(g_camPosition, g_camTarget, g_camUp);
-
+	Matrix4 wm = g_pCamera->GetWorldMatrix();
+//	g_camView = XMMatrixLookAtLH(g_camPosition, g_camTarget, g_camUp);
+//	g_camView = XMMatrix(wm)
 	g_camProjection = XMMatrixPerspectiveFovLH(0.4f*3.14f, (float)g_width / g_height, 1.0f, 1000.0f);
 
 //	hr = CreateWICTextureFromFile(g_d3d11Device, L"clover.dds", NULL, &g_cubesTexture, NULL);
@@ -831,7 +832,15 @@ void RenderScene()
 
 	//g_WVP = g_cube2World * g_camView * g_camProjection;
 	//cbPerObj.WVP = XMMatrixTranspose(g_WVP);
-	
+
+	g_pCamera->SetPosition(Vector3(3, 3, 0));
+	Matrix4 vm = g_pCamera->GetWorldMatrix();
+	g_camView = XMMATRIX(
+		vm(0, 0), vm(0, 1), vm(0, 2), vm(0, 3),
+		vm(1, 0), vm(1, 1), vm(1, 2), vm(1, 3),
+		vm(2, 0), vm(2, 1), vm(2, 2), vm(2, 3),
+		vm(3, 0), vm(3, 1), vm(3, 2), vm(3, 3)
+	);
 
 	g_Material.Render(g_d3d11DevCon, g_cube2World, g_camView, g_camProjection);
 //	g_pShader->Render(g_d3d11DevCon);

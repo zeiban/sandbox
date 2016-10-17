@@ -16,9 +16,15 @@ public:
 	Camera();
 	const Matrix4& GetWorldMatrix();
 	const Matrix4& GetProjectionMatrix();
+	void SetPosition(const Vector3& position);
 };
 
+inline void Camera::SetPosition(const Vector3& v)
+{
+	position = v;
+}
 inline const Matrix4& Camera::GetWorldMatrix()
 {
-	return m[row * 4 + col];
+	Matrix4 worldMatrix = Matrix4(rotation) * Matrix4(position);
+	return worldMatrix;
 }

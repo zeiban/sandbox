@@ -1,4 +1,7 @@
 #pragma once
+
+#include "Vector3.h"
+
 struct Quaternion
 {
 	double x, y, z, w;
