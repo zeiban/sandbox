@@ -39,7 +39,7 @@ void  WindowsKeyboard::Update()
 
 		if(dwCount > 0)
 			OutputDebugString(L"got data\n");
-			
+		this->m_		
 	}
 	else
 	{

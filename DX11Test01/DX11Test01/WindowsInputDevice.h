@@ -8,6 +8,7 @@ public:
 	WindowsInputDevice(WindowsInput& input, GUID guid);
 	bool CreateDirectInputDevice(LPCDIDATAFORMAT dataFormat, DWORD cooplevel, DWORD dwBufferSize);
 	LPDIRECTINPUTDEVICE8 GetDirectInputDevice() const;
+	WindowsInput& GetWindowsInput() const;
 protected:
 	bool Acquire();
 	bool Unacquire();

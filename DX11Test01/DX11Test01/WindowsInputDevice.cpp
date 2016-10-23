@@ -41,6 +41,11 @@ LPDIRECTINPUTDEVICE8 WindowsInputDevice::GetDirectInputDevice() const
 	return m_pDevice;
 }
 
+WindowsInput& WindowsInputDevice::GetWindowsInput() const
+{
+	return m_WindowsInput;
+}
+
 bool WindowsInputDevice::Acquire()
 {
 	return (m_pDevice && SUCCEEDED(m_pDevice->Acquire()));
