@@ -1,30 +1,27 @@
 #pragma once
 
 #include "Matrix4.h"
-#include "Vector3.h"
-#include "Quaternion.h"
+#include "Transform.h"
 
-class Camera
+class Camera : public Transform
 {
 private:
-	Vector3 position;
-	Quaternion rotation;
 	float nearPlane;
 	float farPlane;
 	float fieldOfView;
+	Matrix4 m_projectionMatrix;
 public:
 	Camera();
-	const Matrix4& GetWorldMatrix();
-	const Matrix4& GetProjectionMatrix();
-	void SetPosition(const Vector3& position);
+	const Matrix4& GetProjectionMatrix(void);
+	void SetProjectionMatrix(const Matrix4& projectionMatrix);
 };
 
-inline void Camera::SetPosition(const Vector3& v)
+inline const Matrix4& Camera::GetProjectionMatrix(void)
 {
-	position = v;
+	return m_projectionMatrix;
 }
-inline const Matrix4& Camera::GetWorldMatrix()
+
+inline void Camera::SetProjectionMatrix(const Matrix4& projectionMatrix)
 {
-	Matrix4 worldMatrix = Matrix4(rotation) * Matrix4(position);
-	return worldMatrix;
+	m_projectionMatrix = projectionMatrix;
 }

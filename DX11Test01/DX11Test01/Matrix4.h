@@ -11,8 +11,11 @@ public:
 	Matrix4();
 	Matrix4(const Quaternion& q);
 	Matrix4(const Vector3& v);
-	double& operator()(const int row, const int col);
-	const double& operator[](const int index);
+	const Vector3& GetRight(void);
+	const Vector3& GetUp(void);
+	const Vector3& GetForward(void);
+	double operator()(const int row, const int col) const;
+	const double operator[](const int index) const;
 	Matrix4 Matrix4::operator*(const Matrix4& m) const;
 	Matrix4& Matrix4::operator*=(const Matrix4& m);
 };
@@ -50,7 +53,10 @@ inline Matrix4 Matrix4::operator*(const Matrix4& m2) const
 {
 	Matrix4 r;
 	r.m[0][0] = m[0][0] * m2.m[0][0] + m[0][1] * m2.m[1][0] + m[0][2] * m2.m[2][0] + m[0][3] * m2.m[3][0];
+	r.m[0][1] = m[0][0] * m2.m[0][1] + m[0][1] * m2.m[1][1] + m[0][2] * m2.m[2][1] + m[0][3] * m2.m[3][1];
+	r.m[0][2] = m[0][0] * m2.m[0][2] + m[0][1] * m2.m[1][2] + m[0][2] * m2.m[2][2] + m[0][3] * m2.m[3][2];
 	r.m[0][3] = m[0][0] * m2.m[0][3] + m[0][1] * m2.m[1][3] + m[0][2] * m2.m[2][3] + m[0][3] * m2.m[3][3];
+
 	r.m[1][0] = m[1][0] * m2.m[0][0] + m[1][1] * m2.m[1][0] + m[1][2] * m2.m[2][0] + m[1][3] * m2.m[3][0];
 	r.m[1][1] = m[1][0] * m2.m[0][1] + m[1][1] * m2.m[1][1] + m[1][2] * m2.m[2][1] + m[1][3] * m2.m[3][1];
 	r.m[1][2] = m[1][0] * m2.m[0][2] + m[1][1] * m2.m[1][2] + m[1][2] * m2.m[2][2] + m[1][3] * m2.m[3][2];
@@ -74,7 +80,7 @@ inline Matrix4& Matrix4::operator*=(const Matrix4& m)
 	return *this * m;
 };
 
-inline double& Matrix4::operator()(const int row, const int col)
+inline double Matrix4::operator()(const int row, const int col) const
 {
 	return m[row][col];
 }

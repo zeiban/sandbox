@@ -1,5 +1,6 @@
 #include <windows.h>
 #include <d3d11.h>
+#include <chrono>
 //#include <D3dx9math.h>
 //#include <D3DX11async.h>
 //#include <d3dx10.h>
@@ -18,8 +19,20 @@
 #include "VertexShader.h"
 #include "Octree.h"
 #include "Camera.h"
+#include "Transform.h"
+
+#include "WindowsInput.h"
 
 using namespace DirectX;
+
+bool g_moveRight = false;
+bool g_moveLeft = false;
+bool g_moveForward = false;
+bool g_moveBack = false;
+bool g_lookRight = false;
+bool g_lookLeft = false;
+double g_yrot = 0;
+
 
 LPCTSTR WndClassName = L"firstwindow";    
 HWND g_hWnd = NULL;
@@ -32,6 +45,7 @@ const int g_maxNumTextCharacters = 1024;
 
 OctreeNode* g_pOctree;
 Camera* g_pCamera;
+Input* g_pInput;
 
 IDXGISwapChain* g_swapChain;
 ID3D11Device* g_d3d11Device;
@@ -600,6 +614,7 @@ bool InitScene()
 {
 	g_pOctree = new OctreeNode(NULL, Vector3(0.0, 0.0, 0.0), 1024, 4);
 	g_pCamera = new Camera();
+	g_pCamera->SetPosition(Vector3(0, 0, 10));
 	Vector3 v1(0.0, 1.0, 1.0);
 	double length = v1.Length();
 
@@ -642,7 +657,6 @@ bool InitScene()
 	g_camTarget = XMVectorSet(0.0f, 0.0f, 0.0f, 0.0f);
 	g_camUp = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
 
-	Matrix4 wm = g_pCamera->GetWorldMatrix();
 //	g_camView = XMMatrixLookAtLH(g_camPosition, g_camTarget, g_camUp);
 //	g_camView = XMMatrix(wm)
 	g_camProjection = XMMatrixPerspectiveFovLH(0.4f*3.14f, (float)g_width / g_height, 1.0f, 1000.0f);
@@ -714,6 +728,54 @@ void UpdateScene(float delta)
 	g_rotation = XMMatrixRotationAxis(rotaxis, -rot);
 	g_scale = XMMatrixScaling(1.3f, 1.3f, 1.3f);
 	g_cube2World = g_rotation * g_scale;
+	
+	if (g_moveLeft)
+	{
+		g_pCamera->Translate(g_pCamera->GetRight() * 0.01 * delta);
+	}
+
+	if (g_moveRight)
+	{
+		g_pCamera->Translate(g_pCamera->GetRight() * -0.01 * delta);
+
+	}
+
+	if (g_moveForward)
+	{
+		g_pCamera->Translate(g_pCamera->GetForward() * -0.01 * delta);
+	}
+
+	if (g_moveBack)
+	{
+		g_pCamera->Translate(g_pCamera->GetForward() * 0.01 * delta);
+
+	}
+
+	if (g_lookRight)
+	{
+		g_pCamera->Rotate(Vector3(0, 0.001 * delta, 0));
+	}
+	
+	if (g_lookLeft)
+	{
+		g_pCamera->Rotate(Vector3(0, -0.001 * delta, 0));
+	}
+	//	Quaternion rot = g_pCamera->GetRotation()
+
+	g_yrot += .00005;
+	Quaternion rot = Quaternion(Vector3(0, 0, 1), g_yrot);
+	Matrix4 rm(Quaternion(Vector3(0, 0, 1), g_yrot));
+	Matrix4 pm(Vector3(0, 0, 3));
+	Matrix4 retm = pm * rm;
+	
+	XMMATRIX rm2 = XMMatrixRotationQuaternion(XMQuaternionRotationAxis(XMVectorSet(0, 0, 1, 0), g_yrot));
+	XMMATRIX pm2 = XMMatrixTranslation(0, 0, 3);
+	XMMATRIX retm2 = pm2 * rm2;
+//	g_pCamera->SetRotation(Quaternion(Vector3(0, 0, 1), g_yrot));
+
+//		g_pCamera->Translate(Vector3(0.01 * delta, 0, 0));
+
+//	g_pCamera->Rotate(Vector3(0, 0.0001 * delta, 0));
 
 }
 
@@ -833,7 +895,9 @@ void RenderScene()
 	//g_WVP = g_cube2World * g_camView * g_camProjection;
 	//cbPerObj.WVP = XMMatrixTranspose(g_WVP);
 
-	g_pCamera->SetPosition(Vector3(3, 3, 0));
+//	g_pCamera->Rotate(Vector3(0, .0005, ));
+//	g_pCamera->Translate(Vector3(0.00005, 0.00005, 0.00005));
+
 	Matrix4 vm = g_pCamera->GetWorldMatrix();
 	g_camView = XMMATRIX(
 		vm(0, 0), vm(0, 1), vm(0, 2), vm(0, 3),
@@ -848,7 +912,7 @@ void RenderScene()
 //	g_d3d11DevCon->VSSetConstantBuffers(0, 1, &g_cbPerObjectBuffer);
 //	g_d3d11DevCon->PSSetShaderResources(0, 1, g_pTexture->GetTexture());
 	g_pTerrain->Render(g_d3d11DevCon);
-//	g_pMesh->Render(g_d3d11DevCon);
+	g_pMesh->Render(g_d3d11DevCon);
 
 	g_d3d11DevCon->RSSetState(g_CWcullMode);
 	g_d3d11DevCon->DrawIndexed(g_pTerrain->GetIndexCount(), 0, 0);
@@ -857,7 +921,8 @@ void RenderScene()
 //	g_d3d11DevCon->DrawIndexed(36, 0, 0);
 
 //	g_Material.Render(g_d3d11DevCon, g_cube1World, g_camView, g_camProjection);
-	g_d3d11DevCon->DrawIndexed(g_pTerrain->GetIndexCount(), 0, 0);
+//	g_d3d11DevCon->DrawIndexed(g_pTerrain->GetIndexCount(), 0, 0);
+	g_d3d11DevCon->DrawIndexed(g_pMesh->GetIndexCount(), 0, 0);
 
 	g_swapChain->Present(0, 0);
 }
@@ -866,13 +931,63 @@ int MessageLoop()
 {
 	MSG msg;
 	ZeroMemory(&msg, sizeof(MSG));
-
-	while (true)
+	bool running = true;
+	while (running)
 	{
 		if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
 		{
-			if (msg.message == WM_QUIT)
+			switch (msg.message)
+			{
+			case WM_KEYDOWN:
+				switch (msg.wParam)
+				{
+				case 0x57:
+					g_moveForward = true;
+					break;
+				case 0x53:
+					g_moveBack = true;
+					break;
+				case 0x41:
+					g_moveLeft = true;
+					break;
+				case 0x44:
+					g_moveRight = true;
+					break;
+				case VK_LEFT:
+					g_lookLeft = true;
+					break;
+				case VK_RIGHT:
+					g_lookRight = true;
+					break;
+				}
 				break;
+			case WM_KEYUP:
+				switch (msg.wParam)
+				{
+				case 0x57:
+					g_moveForward = false;
+					break;
+				case 0x53:
+					g_moveBack = false;
+					break;
+				case 0x41:
+					g_moveLeft = false;
+					break;
+				case 0x44:
+					g_moveRight = false;
+					break;
+				case VK_LEFT:
+					g_lookLeft = false;
+					break;
+				case VK_RIGHT:
+					g_lookRight = false;
+					break;
+				}
+				break;
+			case WM_QUIT:
+				running = false;
+				break;
+			}
 
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);
@@ -880,6 +995,7 @@ int MessageLoop()
 		else
 		{
 			double delta = g_timer.GetFrameDelta();
+			g_pInput->Update();
 			UpdateScene(delta);
 			RenderScene();
 		}
@@ -900,6 +1016,45 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 	}
 	Font font = LoadFont(L"font.fnt");
+
+	Transform t1;
+	Transform t2;
+	Transform t3;
+	t2.SetParent(&t1);
+	t3.SetParent(&t2);
+	XMMATRIX m1 = XMMatrixTranslation(1.0f, 2.0f, 3.0f);
+	XMVECTOR axis = XMVectorSet(1.0f, 0.0f, 0.0f, 0.0f);
+	float angle = 1.0f;
+	XMVECTOR qxa =  XMQuaternionRotationAxis(XMVectorSet(1.0f, 0.0f, 0.0f, 0.0f), angle);
+	XMVECTOR qya = XMQuaternionRotationAxis(XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f), angle);
+	XMVECTOR qza = XMQuaternionRotationAxis(XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f), angle);
+	XMVECTOR rqa = XMQuaternionMultiply(qxa, qya);
+
+	Quaternion qxb = Quaternion(Vector3(1, 0, 0), 1);
+	Quaternion qyb = Quaternion(Vector3(0, 1, 0), 1);
+	Quaternion qzb = Quaternion(Vector3(0, 0, 1), 1);
+	Quaternion rqb = qxb * qyb;
+
+	float _00 = m1.r[0].m128_f32[0];
+	float _11 = m1.r[0].m128_f32[0];
+	float _22 = m1.r[0].m128_f32[0];
+	float _33 = m1.r[0].m128_f32[0];
+
+	Matrix4 m2(Vector3(1, 2, 3));
+
+	Transform* pRoot = t3.GetRoot();
+	auto start = std::chrono::high_resolution_clock::now();
+	Sleep(1000);
+	auto end = std::chrono::high_resolution_clock::now();
+	auto delta = end - start;
+	float timeDelta = (float)(delta.count() / 1000000000.0f);
+
+	g_pInput = new WindowsInput(g_hWnd);
+	if (!g_pInput->Init())
+	{
+		delete g_pInput;
+		g_pInput = 0;
+	}
 
 	InitScene();
 

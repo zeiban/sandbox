@@ -26,6 +26,7 @@ void Material::Render(ID3D11DeviceContext* pDeviceContext, const XMMATRIX& world
 {
 	Shader::cbPerObject buffer;
 	buffer.WVP = XMMatrixTranspose(world * view * projection);
+//	buffer.WVP = world * view * projection;
 	m_pShader->Render(pDeviceContext, buffer);
 	pDeviceContext->PSSetShaderResources(0, 1, m_pTexture->GetTexture());
 }
