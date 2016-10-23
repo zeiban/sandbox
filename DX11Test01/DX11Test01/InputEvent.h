@@ -1,5 +1,4 @@
 #pragma once
-
 struct InputEvent
 {
 	enum Type
