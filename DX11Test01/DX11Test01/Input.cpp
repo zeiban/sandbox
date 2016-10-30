@@ -1,3 +1,5 @@
+#include <algorithm>
+
 #include "Input.h"
 
 bool Input::Init()
@@ -31,6 +33,20 @@ void Input::ProcessInputEvent(const InputEvent& event)
 {
 	for (std::vector<InputEventListener*>::iterator i = m_InputEventListeners.begin(); i != m_InputEventListeners.end(); ++i)
 	{
-		(*i)->HandleInputEvent(event);
+		(*i)->OnInputEvent(event);
 	}
+}
+
+void Input::AddInputListener(InputEventListener* pInputListener)
+{	
+	std::vector<InputEventListener*>::iterator listener = std::find(m_InputEventListeners.begin(), m_InputEventListeners.end(), pInputListener);
+
+	if (listener == m_InputEventListeners.end())
+	{
+		m_InputEventListeners.push_back(pInputListener);
+	}
+}
+
+void Input::RemoveInputListener(InputEventListener* pInputListener)
+{
 }

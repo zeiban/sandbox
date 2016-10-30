@@ -105,6 +105,17 @@ Material g_Material;
 Texture2D* g_pTexture;
 Shader* g_pShader;
 
+struct MyInputEventListener : public InputEventListener
+{
+	void OnInputEvent(const InputEvent& event)
+	{
+		if (event.id == InputId::A)
+		{
+
+		}
+	}
+};
+
 struct PositionTexCoordVertex
 {
 	PositionTexCoordVertex() {}
@@ -1055,6 +1066,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		delete g_pInput;
 		g_pInput = 0;
 	}
+	InputEventListener* listener = new MyInputEventListener();
+
+	g_pInput->AddInputListener(listener);
+	g_pInput->AddInputListener(listener);
 
 	InitScene();
 

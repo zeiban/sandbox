@@ -35,15 +35,20 @@ void  WindowsKeyboard::Update()
 			std::wstringstream s;
 			s << key << " " << pressed << std::endl;
 			OutputDebugString(s.str().c_str());
+			InputEvent event;
+			if (pressed)
+			{
+				event.value = 1.0;
+				event.state = InputState::Pressed;
+			}
+			else
+			{
+				event.value = 0;
+				event.state = InputState::Released;
+			}
+
+			GetWindowsInput().ProcessInputEvent(event);
 		}
-
-		if(dwCount > 0)
-			OutputDebugString(L"got data\n");
-		InputEvent event;
-		event.value = 1.0;
-		event.type EventType::
-
-		GetWindowsInput()->AddEvent(event)
 	}
 	else
 	{
