@@ -36,6 +36,7 @@ void  WindowsKeyboard::Update()
 			s << key << " " << pressed << std::endl;
 			OutputDebugString(s.str().c_str());
 			InputEvent event;
+			event.id = InputId::A;
 			if (pressed)
 			{
 				event.value = 1.0;

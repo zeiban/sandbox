@@ -111,7 +111,15 @@ struct MyInputEventListener : public InputEventListener
 	{
 		if (event.id == InputId::A)
 		{
-
+			if (event.state == InputState::Pressed)
+			{
+				g_moveLeft = true;
+			}
+			else if (event.state == InputState::Released)
+			{
+				g_moveLeft = false;
+			}
+		
 		}
 	}
 };
@@ -959,7 +967,7 @@ int MessageLoop()
 					g_moveBack = true;
 					break;
 				case 0x41:
-					g_moveLeft = true;
+//					g_moveLeft = true;
 					break;
 				case 0x44:
 					g_moveRight = true;
@@ -982,7 +990,7 @@ int MessageLoop()
 					g_moveBack = false;
 					break;
 				case 0x41:
-					g_moveLeft = false;
+	//				g_moveLeft = false;
 					break;
 				case 0x44:
 					g_moveRight = false;
