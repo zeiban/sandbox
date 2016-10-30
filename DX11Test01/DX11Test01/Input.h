@@ -47,12 +47,19 @@ struct InputEvent
 	InputEvent() {}
 };
 
+struct InputEventListener
+{
+	virtual void HandleInputEvent(const InputEvent& event) = 0;
+};
+
 class Input
 {
 private:
 	std::vector<InputDevice*> m_InputDevices;
+	std::vector<InputEventListener*> m_InputEventListeners;
 public:
 	virtual bool Init();
 	virtual void Update();
 	bool AddInputDevice(InputDevice * pDevice);
+	void ProcessInputEvent(const InputEvent& event);
 };

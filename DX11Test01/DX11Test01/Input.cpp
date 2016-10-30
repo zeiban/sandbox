@@ -26,3 +26,11 @@ bool Input::AddInputDevice(InputDevice* pDevice)
 	}
 	return false;
 }
+
+void Input::ProcessInputEvent(const InputEvent& event)
+{
+	for (std::vector<InputEventListener*>::iterator i = m_InputEventListeners.begin(); i != m_InputEventListeners.end(); ++i)
+	{
+		(*i)->HandleInputEvent(event);
+	}
+}

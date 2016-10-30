@@ -39,7 +39,11 @@ void  WindowsKeyboard::Update()
 
 		if(dwCount > 0)
 			OutputDebugString(L"got data\n");
-		this->m_		
+		InputEvent event;
+		event.value = 1.0;
+		event.type EventType::
+
+		GetWindowsInput()->AddEvent(event)
 	}
 	else
 	{
